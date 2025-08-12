@@ -1,68 +1,82 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+  font-family: system-ui;
+  display: grid;
+  place-content: center;
   min-height: 100vh;
+  background-image: url("/vite-project/public/fondo.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  color: white;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+html {
+  --s: 100px;
+  /* control the size*/
+  --c1: #4ecdc4;
+  --c2: #556270;
+
+  background:
+    linear-gradient(atan(-.5), var(--c1) 33%, var(--c2) 33.5% 66.5%, var(--c1) 67%) 0/var(--s) var(--s);
+}
+
+/* --- NUEVO: separación entre inputs y botón --- */
+form {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+input {
+  padding: 5px 5px;
+  border-radius: 5px;
+  border: none;
 }
 
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+  padding: 5px 5px;
+  border-radius: 5px;
+  border: none;
+  background-color: #1f926f;
+  color: white;
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+button:hover {
+  background-color: #177659;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.titulo-central {
+  text-align: center;
+  color: #e4eee7;
+  font-size: 2rem;
+  margin-top: 20px;
+}
+
+.leads-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: #4ecdc4;
+}
+
+.leads-table th,
+.leads-table td {
+  padding: 10px 15px;
+  /* --- NUEVO: espacio interno en celdas --- */
+  text-align: center;
+  border: 1px solid #ccc;
+  /* Línea tipo Excel */
+}
+
+.leads-table-body {
+  background-color: #f9f9f9;
+  color: #333;
 }
