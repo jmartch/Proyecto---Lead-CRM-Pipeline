@@ -21,7 +21,6 @@ html {
     linear-gradient(atan(-.5), var(--c1) 33%, var(--c2) 33.5% 66.5%, var(--c1) 67%) 0/var(--s) var(--s);
 }
 
-/* --- NUEVO: separación entre inputs y botón --- */
 form {
   display: flex;
   gap: 10px;
