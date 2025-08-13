@@ -37,8 +37,46 @@ export async function initializeDatabase() {
       )
     `);
 
+    const [columns] = await connection.query(`
+      SELECT COLUMN_NAME
+      FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = 'lead_crm'
+      AND TABLE_NAME = 'leads';
+
+      ;`)
+
+    const existingColumns = columns.map(col => col.COLUMN_NAME);
+
+    //Creacion de lass nuevas columnas si no existen
+    if (!existingColumns.includes('fuente_detallada')) {
+      await connection.query('ALTER TABLE leads ADD COLUMN fuente_detallada VARCHAR(200)');
+      console.log('Columna fuente_detallada agregada');
+    }
+
+    if (!existingColumns.includes('tags')) {
+      await connection.query('ALTER TABLE leads ADD COLUMN tags JSON');
+      console.log('Columna tags agregada');
+    }
+
+    if (!existingColumns.includes('fecha_actualizacion')) {
+      await connection.query('ALTER TABLE leads ADD COLUMN fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP');
+      console.log('Columna fecha_actualizacion agregada');
+    }
+    //Indice unico por email
+    try {
+      await connection.query('ALTER TABLE leads ADD UNIQUE INDEX _emailunique (email)');
+    } catch (indexError) {
+      if (indexError.code !== 'ER_DUP_KEYNAME') {
+        console.log('Indice unico por email ya existe o error diferente:', indexError);
+      }
+    }
+
+
+    const [rows] = await connection.query('SELECT COUNT(*) as count FROM leads');
+    console.log(`Numero de registros en la tabla leads: ${rows[0].count} `);
+
     await connection.end();
-    console.log('✅ Base de datos lista');
+    console.log('Base de datos conectada ');
   } catch (error) {
     console.error('Error inicializando DB:', error);
     if (connection) await connection.end();

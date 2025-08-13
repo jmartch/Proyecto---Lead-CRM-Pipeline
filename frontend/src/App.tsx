@@ -2,6 +2,7 @@ import type { FormEvent } from 'react';
 import { useEffect, useState } from 'react';
 import './index.css';
 
+// Tipos de datos
 interface Lead {
   id?: number;
   nombre: string;
@@ -29,23 +30,36 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<Message | null>(null);
 
+  // Validación de email básica
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+  // Cargar leads al iniciar
   useEffect(() => {
     fetch(import.meta.env.VITE_API_URL + '/api/leads')
       .then(r => r.json())
-      .then(setLeads)
+      .then(data => {
+
+        if (Array.isArray(data)) {
+          setLeads(data);
+        } else if (data && Array.isArray(data.leads)) {
+          setLeads(data.leads);
+        } else {
+          setLeads([]);
+        }
+      })
       .catch(err => {
         console.error("Error cargando leads:", err);
         setMessage({ type: 'error', text: 'Error cargando leads' });
       });
   }, []);
 
+  // Mostrar mensajes temporales
   const showMessage = (type: 'success' | 'error', text: string) => {
     setMessage({ type, text });
     setTimeout(() => setMessage(null), 5000);
   };
 
+  // Validar datos del formulario
   const validateForm = () => {
     if (!form.nombre.trim()) {
       showMessage('error', 'El nombre es requerido');
@@ -65,6 +79,7 @@ export default function App() {
     }
     return true;
   };
+
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -97,10 +112,12 @@ export default function App() {
     }
   }
 
+
   return (
     <div className="App">
       <h1 className="titulo-central">Gestor de Leads</h1>
 
+      {/* Formulario */}
       <form onSubmit={submit}>
         <input
           required
@@ -141,12 +158,14 @@ export default function App() {
         </button>
       </form>
 
+      {/* Mensajes */}
       {message && (
         <div className={`text-center ${message.type === 'success' ? 'mensaje-exito' : 'mensaje-error'}`}>
           {message.text}
         </div>
       )}
 
+      {/* Tabla de leads */}
       <table className="leads-table">
         <thead>
           <tr>
@@ -172,12 +191,15 @@ export default function App() {
         </tbody>
       </table>
 
+      {/* Mensaje si no hay datos */}
       {leads.length === 0 && (
         <div className="text-center">
           No hay leads registrados
         </div>
       )}
-            <style>{`
+
+      {/* Animaciones */}
+      <style>{`
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
