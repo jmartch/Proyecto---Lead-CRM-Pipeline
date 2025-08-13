@@ -1,29 +1,39 @@
+// server.js
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+
+import { swaggerDocs } from './config/swagger.js'; 
 import { initializeDatabase } from './config/db.js';
 import leadRoutes from './routes/leads.js';
 
 dotenv.config();
 const app = express();
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
+// Rutas de la API
 app.use('/api/leads', leadRoutes);
 
 async function start() {
   await initializeDatabase();
+
   const PORT = process.env.PORT || 4000;
-   app.listen(PORT, () => {
-     console.log(`API escuchando en puerto ${PORT}`);
-     console.log(`🌐 Endpoints disponibles:`);
-     console.log(`   GET  http://localhost:${PORT}/api/leads`);
-     console.log(`   GET http://localhost:${PORT}/api/leads/:id`);
-     console.log(`   POST http://localhost:${PORT}/api/leads`);
-     console.log(`   PUT http://localhost:${PORT}/api/leads/:id`);
-     console.log(`   DELETE http://localhost:${PORT}/api/leads/:id`);
-   });
+
+  // Inicializamos Swagger *después* de saber el puerto
+  swaggerDocs(app, PORT);
+
+  app.listen(PORT, () => {
+    console.log(`🚀 API escuchando en puerto ${PORT}`);
+    console.log(`🌐 Endpoints disponibles:`);
+    console.log(`   GET    http://localhost:${PORT}/api/leads`);
+    console.log(`   GET    http://localhost:${PORT}/api/leads/:id`);
+    console.log(`   POST   http://localhost:${PORT}/api/leads`);
+    console.log(`   PUT    http://localhost:${PORT}/api/leads/:id`);
+    console.log(`   DELETE http://localhost:${PORT}/api/leads/:id`);
+  });
 }
 
 start();

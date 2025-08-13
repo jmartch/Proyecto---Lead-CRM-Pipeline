@@ -35,4 +35,25 @@ router.put('/:id', LeadController.update);
 // DELETE /api/leads/:id - Eliminar lead
 router.delete('/:id', LeadController.delete);
 
+/**
+ * @swagger
+ * /api/leads:
+ *   get:
+ *     summary: Obtener todos los leads con filtros opcionales
+ *     parameters:
+ *       - in: query
+ *         name: estado
+ *         schema:
+ *           type: string
+ *         description: Estado del lead
+ *       - in: query
+ *         name: origen
+ *         schema:
+ *           type: string
+ *         description: Origen del lead
+ *     responses:
+ *       200:
+ *         description: Lista de leads
+ */
+
 export default router;
