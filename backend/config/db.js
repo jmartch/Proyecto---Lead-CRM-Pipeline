@@ -22,6 +22,20 @@ export async function initializeDatabase() {
     await connection.query('CREATE DATABASE IF NOT EXISTS lead_crm');
     await connection.query('USE lead_crm');
 
+    //Tablas creacion o verificacion
+
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS usuarios (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        nombre VARCHAR(100) NOT NULL,
+        email VARCHAR(100) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        rol ENUM('admin','ejecutivo','marketing') DEFAULT 'ejecutivo',
+        creado TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('Tabla usuarios creada/verificada');
+
     await connection.query(`
       CREATE TABLE IF NOT EXISTS leads (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -71,9 +85,12 @@ export async function initializeDatabase() {
       }
     }
 
+    //Conteo
+    const [leadsRows] = await connection.query('SELECT COUNT(*) as count FROM leads');
+    console.log(`Número de registros en la tabla leads: ${leadsRows[0].count}`);
 
-    const [rows] = await connection.query('SELECT COUNT(*) as count FROM leads');
-    console.log(`Numero de registros en la tabla leads: ${rows[0].count} `);
+    const [usersRows] = await connection.query('SELECT COUNT(*) as count FROM usuarios');
+    console.log(`Número de registros en la tabla usuarios: ${usersRows[0].count}`);
 
     await connection.end();
     console.log('Base de datos conectada ');
