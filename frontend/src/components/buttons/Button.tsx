@@ -1,5 +1,5 @@
 import React from 'react';
-import clsx from 'clsx';
+import '../../utils/Button.css';
 
 interface ButtonProps {
   type?: "button" | "submit" | "reset";
@@ -21,13 +21,7 @@ const Button: React.FC<ButtonProps> = ({
       onClick={onClick}
       type={type}
       disabled={disabled}
-      className={clsx(
-        "flex justify-center rounded-md px-3 py-2 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2",
-        fullWidth && "w-full",
-        disabled
-          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-          : "bg-indigo-500 text-white hover:bg-indigo-600 focus-visible:outline-indigo-600"
-      )}
+      className={`btn ${fullWidth ? 'btn-full' : ''} ${disabled ? 'btn-disabled' : 'btn-active'}`}
     >
       {children}
     </button>

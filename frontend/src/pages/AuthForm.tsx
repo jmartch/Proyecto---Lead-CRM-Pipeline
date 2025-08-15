@@ -1,9 +1,12 @@
 import React, { useCallback, useState } from 'react';
-import  { useForm, type SubmitHandler,type FieldValues } from 'react-hook-form';
+import { useForm, type SubmitHandler, type FieldValues } from 'react-hook-form';
 import Input from "../components/inputs/Inputs";
 import Button from "../components/buttons/Button";
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
+import '../utils/AuthForm.css'
+
 
 type Variant = "Login" | "Register";
 
@@ -36,7 +39,7 @@ const AuthForm = () => {
           return;
         }
 
-        await axios.post(import.meta.env.VITE_API_URL+'/api/users/register', {
+        await axios.post(import.meta.env.VITE_API_URL + '/api/users/register', {
           nombre: data.name,
           email: data.email,
           password: data.password
@@ -51,7 +54,7 @@ const AuthForm = () => {
       }
 
       if (variant === "Login") {
-        const res = await axios.post(import.meta.env.VITE_API_URL+'/api/users/login', {
+        const res = await axios.post(import.meta.env.VITE_API_URL + '/api/users/login', {
           email: data.email,
           password: data.password
         });
@@ -68,13 +71,16 @@ const AuthForm = () => {
   };
 
   return (
-    <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-      <div className="bg-white px-4 py-8 shadow sm:rounded-lg sm:px-10">
-        <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+    <div className="login-container">
+      <div className="login-card">
+        <form className="login-form" onSubmit={handleSubmit(onSubmit)}>
+          <h2 className="login-title">
+            {variant === "Login" ? "Iniciar Sesión" : "Crear Cuenta"}
+          </h2>
           {variant === "Register" && (
             <Input
               id="name"
-              label="Name"
+              label="Nombre"
               register={register}
               error={errors}
               disabled={isLoading}
@@ -88,6 +94,7 @@ const AuthForm = () => {
             error={errors}
             disabled={isLoading}
           />
+
           <Input
             id="password"
             label="Password"
@@ -96,20 +103,21 @@ const AuthForm = () => {
             error={errors}
             disabled={isLoading}
           />
-          <div>
-            <Button fullWidth disabled={isLoading} type="submit">
-              {variant === "Login" ? "Sign In" : "Register"}
+
+          <div className="login-button-container">
+            <Button disabled={isLoading} type="submit">
+              {variant === "Login" ? "Iniciar Sesion" : "Crear Cuenta"}
             </Button>
           </div>
         </form>
 
-        <div className="flex gap-2 justify-center text-sm mt-6 text-gray-500">
+        <div className="login-footer">
           <div>
             {variant === "Login" ? "¿Nuevo aquí?" : "¿Ya tienes cuenta?"}
           </div>
           <div
             onClick={toggleVariant}
-            className="underline text-indigo-500 hover:text-indigo-600 cursor-pointer"
+            className="login-link"
           >
             {variant === "Login" ? "Crear cuenta" : "Iniciar sesión"}
           </div>

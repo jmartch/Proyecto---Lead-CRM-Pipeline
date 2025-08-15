@@ -1,5 +1,6 @@
 import React from 'react';
-import type {FieldErrors, FieldValues, UseFormRegister } from 'react-hook-form';
+import type { FieldErrors, FieldValues, UseFormRegister } from 'react-hook-form';
+import '../../utils/Input.css';
 
 interface InputProps {
   id: string;
@@ -18,27 +19,25 @@ const Input: React.FC<InputProps> = ({
   register,
   error
 }) => {
+  const hasError = !!error[id];
+
   return (
-    <div>
-      <label
-        htmlFor={id}
-        className="block text-sm font-medium text-gray-700 mb-1"
-      >
+    <div className="input-wrapper">
+      <label htmlFor={id} className="input-label">
         {label}
       </label>
+
       <input
         id={id}
         type={type}
         autoComplete={id}
         disabled={disabled}
         {...register(id, { required: true })}
-        className={`form-input block w-full rounded-md border border-gray-300 shadow-sm py-2 px-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm
-          ${disabled ? "bg-gray-100 cursor-not-allowed" : ""}
-          ${error[id] ? "border-red-500 focus:ring-red-500" : ""}
-        `}
+        className={`input-field ${disabled ? 'input-disabled' : ''} ${hasError ? 'input-error' : ''}`}
       />
-      {error[id] && (
-        <p className="mt-1 text-xs text-red-500">Este campo es obligatorio</p>
+
+      {hasError && (
+        <p className="input-error-message">Este campo es obligatorio</p>
       )}
     </div>
   );

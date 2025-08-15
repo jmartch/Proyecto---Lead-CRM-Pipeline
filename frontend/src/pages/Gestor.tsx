@@ -1,6 +1,6 @@
 import type { FormEvent } from 'react';
 import { useEffect, useState } from 'react';
-import './index.css';
+import '../global.css';
 
 // Tipos de datos
 interface Lead {
@@ -18,7 +18,7 @@ interface Message {
   text: string;
 }
 
-export default function App() {
+export default function Gestor() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [form, setForm] = useState<Lead>({
     nombre: '',
@@ -114,7 +114,7 @@ export default function App() {
 
 
   return (
-    <div className="App">
+    <div className="Gestor">
       <h1 className="titulo-central">Gestor de Leads</h1>
 
       {/* Formulario */}
