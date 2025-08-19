@@ -24,6 +24,7 @@ const Button: React.FC<ButtonProps> = ({
       className={`btn ${fullWidth ? 'btn-full' : ''} ${disabled ? 'btn-disabled' : 'btn-active'}`}
     >
       {children}
+      
     </button>
   );
 };

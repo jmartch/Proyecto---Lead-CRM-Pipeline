@@ -3,20 +3,110 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Lead:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: ID único del lead.
+ *         nombre:
+ *           type: string
+ *           description: Nombre completo del lead.
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: Correo electrónico del lead (único).
+ *         telefono:
+ *           type: string
+ *           description: Teléfono de contacto del lead.
+ *         origen:
+ *           type: string
+ *           description: Fuente del lead (ej. campaña, web, redes).
+ *         campaña:
+ *           type: string
+ *           description: Nombre de la campaña de marketing asociada.
+ *         ciudad:
+ *           type: string
+ *           description: Ciudad del lead.
+ *         responsable:
+ *           type: string
+ *           description: Responsable asignado al lead.
+ *         estado:
+ *           type: string
+ *           enum: [nuevo, contactado, en_negociacion, cerrado_ganado, cerrado_perdido]
+ *           description: Estado actual del lead.
+ *         fecha:
+ *           type: string
+ *           format: date-time
+ *           description: Fecha de creación del lead.
+ *         fuente_detallada:
+ *           type: string
+ *           description: Fuente más detallada del lead.
+ *         tags:
+ *           type: object
+ *           description: Etiquetas asociadas al lead (JSON).
+ *         fecha_actualizacion:
+ *           type: string
+ *           format: date-time
+ *           description: Última actualización del lead.
+ *
+ *     Usuario:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: ID único del usuario.
+ *         nombre:
+ *           type: string
+ *           description: Nombre completo del usuario.
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: Correo electrónico único del usuario.
+ *         password:
+ *           type: string
+ *           format: password
+ *           description: Contraseña encriptada del usuario.
+ *         rol:
+ *           type: string
+ *           enum: [admin, ejecutivo, marketing]
+ *           description: Rol del usuario dentro del CRM.
+ *         creado:
+ *           type: string
+ *           format: date-time
+ *           description: Fecha de creación del usuario.
+ */
+
+
 // Pools de conexión
+//POOL LEADS
 export const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: 'lead_crm'
 });
-
+//POOL USUARIOS 
 export const poolusers = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: 'usuarios_crm'
 });
+
+/**
+ * @function initializeDatabase
+ * @description Inicializa las bases de datos `lead_crm` y `usuarios_crm`.
+ *  - Crea las bases si no existen.
+ *  - Genera las tablas `leads` y `usuarios` con sus restricciones.
+ *  - Verifica y agrega columnas adicionales si no existen (`fuente_detallada`, `tags`, `fecha_actualizacion`).
+ *  - Crea índices únicos para asegurar emails no duplicados.
+ *  - Muestra conteo de registros en consola.
+ */
 
 export async function initializeDatabase() {
   let connection;
@@ -79,11 +169,7 @@ export async function initializeDatabase() {
       }
     }
 
-    /*
-     * ============================
-     * DB: usuarios_crm
-     * ============================
-     */
+    /*DB: usuarios_crm */
     await connection.query('CREATE DATABASE IF NOT EXISTS usuarios_crm');
     await connection.query('USE usuarios_crm');
 

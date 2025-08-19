@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { registerUser, loginUser, authController } from '../controllers/auth.controller.js';
+import { verifyToken, verifyAdmin } from '../middlewares/auth.middlewares.js';
 
 const router = Router();
+
 
 /**
  * @swagger
@@ -12,7 +14,7 @@ const router = Router();
 
 /**
  * @swagger
- * /api/auth/register:
+ * /api/users/register:
  *   post:
  *     summary: Registrar un nuevo usuario
  *     tags: [Auth]
@@ -44,7 +46,7 @@ router.post('/register', registerUser);
 
 /**
  * @swagger
- * /api/auth/login:
+ * /api/users/login:
  *   post:
  *     summary: Iniciar sesión
  *     tags: [Auth]
@@ -71,9 +73,10 @@ router.post('/register', registerUser);
  */
 router.post('/login', loginUser);
 
+
 /**
  * @swagger
- * /api/auth/users:
+ * /api/users:
  *   get:
  *     summary: Obtener todos los usuarios
  *     tags: [Auth]
@@ -81,11 +84,11 @@ router.post('/login', loginUser);
  *       200:
  *         description: Lista de usuarios
  */
-router.get('/users', authController.getAllUsers);
+router.get('/', authController.getAllUsers);
 
 /**
  * @swagger
- * /api/auth/users/{id}:
+ * /api/users/{id}:
  *   get:
  *     summary: Obtener un usuario por ID
  *     tags: [Auth]
@@ -105,7 +108,7 @@ router.get('/users/:id', authController.getUserById);
 
 /**
  * @swagger
- * /api/auth/users/{id}:
+ * /api/users/{id}:
  *   put:
  *     summary: Actualizar un usuario
  *     tags: [Auth]
@@ -136,11 +139,11 @@ router.get('/users/:id', authController.getUserById);
  *       404:
  *         description: Usuario no encontrado
  */
-router.put('/users/:id', authController.updateUser);
+router.put('/users/:id', verifyToken, authController.updateUser); // 👤 cualquier user puede editar su perfil (menos role)
 
 /**
  * @swagger
- * /api/auth/users/{id}:
+ * /api/users/{id}:
  *   delete:
  *     summary: Eliminar un usuario
  *     tags: [Auth]
@@ -160,7 +163,7 @@ router.delete('/users/:id', authController.deleteUser);
 
 /**
  * @swagger
- * /api/auth/users/{id}/role:
+ * /api/users/{id}/role:
  *   patch:
  *     summary: Cambiar el rol de un usuario
  *     tags: [Auth]
@@ -189,6 +192,6 @@ router.delete('/users/:id', authController.deleteUser);
  *       404:
  *         description: Usuario no encontrado
  */
-router.patch('/users/:id/role', authController.changeUserRole);
+router.put('/users/:id/role', verifyAdmin, authController.changeUserRole); // 🔐 solo admin cambia roles
 
 export default router;

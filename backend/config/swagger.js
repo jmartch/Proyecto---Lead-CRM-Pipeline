@@ -12,7 +12,7 @@ const swaggerOptions = {
     info: {
       title: 'Lead CRM API',
       version: '1.0.0',
-      description: 'Documentación de la API del CRM de Leads',
+      description: 'Documentación de la API del CRM ',
     },
     servers: [
       {
@@ -20,7 +20,10 @@ const swaggerOptions = {
       },
     ],
   },
-  apis: [path.join(__dirname, '../routes/*.js')],
+  apis: [
+    path.join(__dirname, '../config/*.js'),
+    path.join(__dirname, '../routes/*.js'),
+  ],
 };
 
 const swaggerSpec = swaggerJSDoc(swaggerOptions);

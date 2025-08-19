@@ -1,4 +1,3 @@
-// server.js
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -6,7 +5,7 @@ import dotenv from 'dotenv';
 import { swaggerDocs } from './config/swagger.js';
 import { initializeDatabase } from './config/db.js';
 import leadRoutes from './routes/leads.js';
-import authRoutes from './routes/auth.js';
+import userRoutes from './routes/auth.js';
 
 dotenv.config();
 const app = express();
@@ -17,7 +16,7 @@ app.use(express.json());
 
 // Rutas de la API
 app.use('/api/leads', leadRoutes);
-app.use('/api/users', authRoutes);
+app.use('/api/users', userRoutes);
 
 async function start() {
   await initializeDatabase();
