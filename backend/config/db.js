@@ -3,11 +3,19 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// Pools de conexión
 export const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: 'lead_crm'
+});
+
+export const poolusers = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: 'usuarios_crm'
 });
 
 export async function initializeDatabase() {
@@ -21,20 +29,6 @@ export async function initializeDatabase() {
 
     await connection.query('CREATE DATABASE IF NOT EXISTS lead_crm');
     await connection.query('USE lead_crm');
-
-    //Tablas creacion o verificacion
-
-    await connection.query(`
-      CREATE TABLE IF NOT EXISTS usuarios (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        nombre VARCHAR(100) NOT NULL,
-        email VARCHAR(100) UNIQUE NOT NULL,
-        password VARCHAR(255) NOT NULL,
-        rol ENUM('admin','ejecutivo','marketing') DEFAULT 'ejecutivo',
-        creado TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    console.log('Tabla usuarios creada/verificada');
 
     await connection.query(`
       CREATE TABLE IF NOT EXISTS leads (
@@ -51,49 +45,77 @@ export async function initializeDatabase() {
       )
     `);
 
+    // Verificación de columnas extras
     const [columns] = await connection.query(`
       SELECT COLUMN_NAME
       FROM INFORMATION_SCHEMA.COLUMNS
       WHERE TABLE_SCHEMA = 'lead_crm'
-      AND TABLE_NAME = 'leads';
-
-      ;`)
+      AND TABLE_NAME = 'leads'
+    `);
 
     const existingColumns = columns.map(col => col.COLUMN_NAME);
 
-    //Creacion de lass nuevas columnas si no existen
     if (!existingColumns.includes('fuente_detallada')) {
       await connection.query('ALTER TABLE leads ADD COLUMN fuente_detallada VARCHAR(200)');
-      console.log('Columna fuente_detallada agregada');
+      console.log('Columna fuente_detallada agregada en leads');
     }
 
     if (!existingColumns.includes('tags')) {
       await connection.query('ALTER TABLE leads ADD COLUMN tags JSON');
-      console.log('Columna tags agregada');
+      console.log('Columna tags agregada en leads');
     }
 
     if (!existingColumns.includes('fecha_actualizacion')) {
       await connection.query('ALTER TABLE leads ADD COLUMN fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP');
-      console.log('Columna fecha_actualizacion agregada');
+      console.log('Columna fecha_actualizacion agregada en leads');
     }
-    //Indice unico por email
+
+    // Índice único en leads
     try {
-      await connection.query('ALTER TABLE leads ADD UNIQUE INDEX _emailunique (email)');
+      await connection.query('ALTER TABLE leads ADD UNIQUE INDEX leads_email_unique (email)');
     } catch (indexError) {
       if (indexError.code !== 'ER_DUP_KEYNAME') {
-        console.log('Indice unico por email ya existe o error diferente:', indexError);
+        console.log('Error creando índice único en leads:', indexError);
       }
     }
 
-    //Conteo
-    const [leadsRows] = await connection.query('SELECT COUNT(*) as count FROM leads');
-    console.log(`Número de registros en la tabla leads: ${leadsRows[0].count}`);
+    /*
+     * ============================
+     * DB: usuarios_crm
+     * ============================
+     */
+    await connection.query('CREATE DATABASE IF NOT EXISTS usuarios_crm');
+    await connection.query('USE usuarios_crm');
 
-    const [usersRows] = await connection.query('SELECT COUNT(*) as count FROM usuarios');
-    console.log(`Número de registros en la tabla usuarios: ${usersRows[0].count}`);
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS usuarios (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        nombre VARCHAR(100) NOT NULL,
+        email VARCHAR(100) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        rol ENUM('admin','ejecutivo','marketing') DEFAULT 'ejecutivo',
+        creado TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Índice único en usuarios
+    try {
+      await connection.query('ALTER TABLE usuarios ADD UNIQUE INDEX usuarios_email_unique (email)');
+    } catch (indexError) {
+      if (indexError.code !== 'ER_DUP_KEYNAME') {
+        console.log('Error creando índice único en usuarios:', indexError);
+      }
+    }
+
+    // Conteo de registros
+    const [[{ count: leadsCount }]] = await connection.query('SELECT COUNT(*) as count FROM lead_crm.leads');
+    console.log(`Número de registros en lead_crm.leads: ${leadsCount}`);
+
+    const [[{ count: usersCount }]] = await connection.query('SELECT COUNT(*) as count FROM usuarios_crm.usuarios');
+    console.log(`Número de registros en usuarios_crm.usuarios: ${usersCount}`);
 
     await connection.end();
-    console.log('Base de datos conectada ');
+    console.log('Bases de datos conectadas correctamente ✅');
   } catch (error) {
     console.error('Error inicializando DB:', error);
     if (connection) await connection.end();

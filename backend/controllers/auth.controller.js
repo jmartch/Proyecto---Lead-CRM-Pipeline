@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { pool } from '../config/db.js'; 
+import { pool } from '../config/db.js';
+import { authModel } from '../models/auth.models.js';
 
 // REGISTRO
 export async function registerUser(req, res) {
@@ -65,4 +66,98 @@ export async function loginUser(req, res) {
         console.error('Error en login:', error);
         res.status(500).json({ message: 'Error interno del servidor' });
     }
+}
+
+// Respuesta API
+export const authController = {
+
+getAllUsers: async (req, res) => {
+    try {
+        const filters = req.query;
+        const result = await authModel.getAllWithFilters(filters);
+        res.json(result);
+    } catch (error) {
+        console.error('Error en getAllUsers:', error);
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
+},
+
+
+getUserById: async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await authModel.getById(id);
+        if (!user) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+        res.json(user);
+    } catch (error) {
+        console.error('Error en getUserById:', error);
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
+},
+
+updateUser: async (req, res) =>{
+    try {
+        const { id } = req.params;
+        const { nombre, email, password, rol } = req.body;
+
+        let hashedPassword = password;
+        if (password) {
+            hashedPassword = await bcrypt.hash(password, 12);
+        }
+
+        const updated = await authModel.update(id, {
+            nombre,
+            email,
+            password: hashedPassword,
+            rol,
+        });
+
+        if (!updated) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+
+        res.json({ message: 'Usuario actualizado correctamente' });
+    } catch (error) {
+        console.error('Error en updateUser:', error);
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
+},
+
+deleteUser: async(req, res) => {
+    try {
+        const { id } = req.params;
+        const deleted = await authModel.delete(id);
+        if (!deleted) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+        res.json({ message: 'Usuario eliminado correctamente' });
+    } catch (error) {
+        console.error('Error en deleteUser:', error);
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
+},
+
+changeUserRole: async  (req, res) => {
+    try {
+        const { id } = req.params;
+        const { rol } = req.body;
+
+        if (!rol) {
+            return res.status(400).json({ message: 'Debe especificar un rol' });
+        }
+
+        const updated = await authModel.changeRole(id, rol);
+
+        if (!updated) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+
+        res.json({ message: 'Rol actualizado correctamente' });
+    } catch (error) {
+        console.error('Error en changeUserRole:', error);
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
+}
 }

@@ -4,7 +4,8 @@ import Input from "../components/inputs/Inputs";
 import Button from "../components/buttons/Button";
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'
+import {registerUser,loginUser} from '@/backend/controllers/';
 import '../utils/AuthForm.css'
 
 

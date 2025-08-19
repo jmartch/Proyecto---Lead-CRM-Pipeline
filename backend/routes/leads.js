@@ -2,10 +2,6 @@ import { Router } from 'express';
 import { LeadController } from '../controllers/leads.controllers.js';
 
 const router = Router();
-
-// GET /api/leads/options - Obtener opciones para filtros (debe ir ANTES de /:id)
-router.get('/options', LeadController.getFilterOptions);
-
 // GET /api/leads - Obtener leads con filtros opcionales
 // Parámetros de query soportados:
 // - estado: nuevo, contactado, en_negociacion, cerrado_ganado, cerrado_perdido
@@ -19,41 +15,153 @@ router.get('/options', LeadController.getFilterOptions);
 // - limit: registros por página (default: 10)
 // - sort_by: campo de ordenamiento (fecha, nombre, email, estado, ciudad, responsable, fecha_actualizacion)
 // - sort_order: ASC o DESC (default: DESC)
-router.get('/', LeadController.getAll);
 
-// GET /api/leads/:id - Obtener lead específico
-router.get('/:id', LeadController.getById);
 
-// POST /api/leads - Crear nuevo lead
-// Body: { nombre, email, telefono?, origen?, campaña?, ciudad?, fuente_detallada?, tags?, responsable?, estado? }
-router.post('/', LeadController.create);
 
-// PUT /api/leads/:id - Actualizar lead existente
-// Body: cualquier campo de lead para actualizar
-router.put('/:id', LeadController.update);
-
-// DELETE /api/leads/:id - Eliminar lead
-router.delete('/:id', LeadController.delete);
+/**
+ * @swagger
+ * tags:
+ *   name: Leads
+ *   description: Endpoints de gestión de leads
+ */
 
 /**
  * @swagger
  * /api/leads:
  *   get:
- *     summary: Obtener todos los leads con filtros opcionales
- *     parameters:
- *       - in: query
- *         name: estado
- *         schema:
- *           type: string
- *         description: Estado del lead
- *       - in: query
- *         name: origen
- *         schema:
- *           type: string
- *         description: Origen del lead
+ *     summary: Obtener todos los leads (con filtros, paginación y ordenamiento)
+ *     tags: [Leads]
  *     responses:
  *       200:
  *         description: Lista de leads
  */
+router.get('/', LeadController.getAll);
+
+/**
+ * @swagger
+ * /api/leads/{id}:
+ *   get:
+ *     summary: Obtener un lead por ID
+ *     tags: [Leads]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Lead encontrado
+ *       404:
+ *         description: Lead no encontrado
+ */
+router.get('/:id', LeadController.getById);
+
+/**
+ * @swagger
+ * /api/leads:
+ *   post:
+ *     summary: Crear un nuevo lead
+ *     tags: [Leads]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nombre
+ *               - email
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               telefono:
+ *                 type: string
+ *               origen:
+ *                 type: string
+ *               campaña:
+ *                 type: string
+ *               ciudad:
+ *                 type: string
+ *               fuente_detallada:
+ *                 type: string
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               responsable:
+ *                 type: string
+ *               estado:
+ *                 type: string
+ *                 enum: [nuevo, contactado, en_negociacion, cerrado_ganado, cerrado_perdido]
+ *     responses:
+ *       201:
+ *         description: Lead creado exitosamente
+ *       400:
+ *         description: Error de validación
+ *       409:
+ *         description: Ya existe un lead con este email
+ */
+router.post('/', LeadController.create);
+
+/**
+ * @swagger
+ * /api/leads/{id}:
+ *   put:
+ *     summary: Actualizar un lead
+ *     tags: [Leads]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Lead actualizado correctamente
+ *       404:
+ *         description: Lead no encontrado
+ */
+router.put('/:id', LeadController.update);
+
+/**
+ * @swagger
+ * /api/leads/{id}:
+ *   delete:
+ *     summary: Eliminar un lead
+ *     tags: [Leads]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Lead eliminado correctamente
+ *       404:
+ *         description: Lead no encontrado
+ */
+router.delete('/:id', LeadController.delete);
+
+/**
+ * @swagger
+ * /api/leads/options:
+ *   get:
+ *     summary: Obtener opciones únicas para filtros (estados, ciudades, responsables, etc.)
+ *     tags: [Leads]
+ *     responses:
+ *       200:
+ *         description: Opciones disponibles
+ */
+router.get('/options', LeadController.getFilterOptions);
 
 export default router;

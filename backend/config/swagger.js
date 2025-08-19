@@ -26,9 +26,9 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
 // Función para inicializar swagger
-export const swaggerDocs = (app, port) => {
+export const swaggerDocs = (app, PORT) => {
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-  console.log(`📄 Swagger docs disponibles en: http://localhost:${port}/api-docs`);
+  console.log(`📄 Swagger docs disponibles en: http://localhost:${PORT}/api-docs`);
 };
 
 export default swaggerSpec;
