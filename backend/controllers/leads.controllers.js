@@ -1,6 +1,6 @@
 import { LeadModel } from '../models/leads.model.js';
 import { isValidEmail, isValidPhone } from '../utils/validators.js';
-
+import { parse } from "csv-parse";
 export const LeadController = {
   // GET /api/leads con filtros, paginación y ordenamiento
   getAll: async (req, res) => {
@@ -16,7 +16,7 @@ export const LeadController = {
 
       // Usar método con filtros
       const result = await LeadModel.getAllWithFilters(req.query);
-      
+
       console.log(` Enviando ${result.leads.length} leads de ${result.pagination.total} total`);
       console.log(` Página ${result.pagination.page} de ${result.pagination.total_pages}`);
 
@@ -35,12 +35,12 @@ export const LeadController = {
     try {
       console.log(` Solicitud GET /api/leads/${req.params.id}`);
       const lead = await LeadModel.getById(req.params.id);
-      
+
       if (!lead) {
         console.log(` Lead ${req.params.id} no encontrado`);
         return res.status(404).json({ status: 'error', message: 'Lead no encontrado' });
       }
-      
+
       console.log(` Enviando lead ${req.params.id}`);
       res.json({ status: 'ok', lead });
     } catch (error) {
@@ -53,9 +53,9 @@ export const LeadController = {
   create: async (req, res) => {
     try {
       console.log(' Solicitud POST /api/leads:', req.body);
-      const { 
-        nombre, email, telefono, origen, campaña, 
-        ciudad, fuente_detallada, tags, responsable, estado 
+      const {
+        nombre, email, telefono, origen, campaña,
+        ciudad, fuente_detallada, tags, responsable, estado
       } = req.body;
 
       // Validaciones detalladas
@@ -116,23 +116,23 @@ export const LeadController = {
         });
       }
 
-      const id = await LeadModel.create({ 
-        nombre, email, telefono, origen, campaña, 
-        ciudad, fuente_detallada, tags, responsable, estado 
+      const id = await LeadModel.create({
+        nombre, email, telefono, origen, campaña,
+        ciudad, fuente_detallada, tags, responsable, estado
       });
-      
+
       const newLead = await LeadModel.getById(id);
-      
+
       console.log(` Lead creado con ID: ${id}`);
-      res.status(201).json({ 
-        status: 'ok', 
+      res.status(201).json({
+        status: 'ok',
         message: 'Lead creado exitosamente',
-        lead: newLead 
+        lead: newLead
       });
 
     } catch (error) {
       console.error(' Error creando lead:', error);
-      
+
       if (error.message === 'EMAIL_EXISTS') {
         return res.status(409).json({
           status: 'error',
@@ -158,7 +158,7 @@ export const LeadController = {
   update: async (req, res) => {
     try {
       console.log(` Solicitud PUT /api/leads/${req.params.id}:`, req.body);
-      
+
       // Primero verificar que el lead existe
       const existingLead = await LeadModel.getById(req.params.id);
       if (!existingLead) {
@@ -167,11 +167,11 @@ export const LeadController = {
       }
 
       // Validaciones similares al create pero más flexibles
-      const { 
-        nombre, email, telefono, origen, campaña, 
-        ciudad, fuente_detallada, tags, responsable, estado 
+      const {
+        nombre, email, telefono, origen, campaña,
+        ciudad, fuente_detallada, tags, responsable, estado
       } = req.body;
-      
+
       const errors = [];
 
       // Solo validar campos que se están enviando
@@ -212,36 +212,36 @@ export const LeadController = {
       }
 
       const updated = await LeadModel.update(req.params.id, req.body);
-      
+
       if (!updated) {
         console.log(` No se pudo actualizar lead ${req.params.id}`);
         return res.status(404).json({ status: 'error', message: 'Lead no encontrado' });
       }
-      
+
       // Obtener el lead actualizado
       const updatedLead = await LeadModel.getById(req.params.id);
-      
+
       console.log(` Lead ${req.params.id} actualizado exitosamente`);
-      res.json({ 
-        status: 'ok', 
+      res.json({
+        status: 'ok',
         message: 'Lead actualizado correctamente',
-        lead: updatedLead 
+        lead: updatedLead
       });
-      
+
     } catch (error) {
       console.error(' Error actualizando lead:', error);
-      
+
       if (error.message === 'INVALID_STATE') {
         return res.status(400).json({ status: 'error', message: 'Estado no válido' });
       }
-      
+
       if (error.code === 'ER_DUP_ENTRY') {
         return res.status(409).json({
           status: 'error',
           message: 'Ya existe un lead con este email'
         });
       }
-      
+
       res.status(500).json({ status: 'error', message: 'Error actualizando lead' });
     }
   },
@@ -250,13 +250,13 @@ export const LeadController = {
   delete: async (req, res) => {
     try {
       console.log(` Solicitud DELETE /api/leads/${req.params.id}`);
-      
+
       const deleted = await LeadModel.delete(req.params.id);
       if (!deleted) {
         console.log(` Lead ${req.params.id} no encontrado para eliminar`);
         return res.status(404).json({ status: 'error', message: 'Lead no encontrado' });
       }
-      
+
       console.log(`✅Lead ${req.params.id} eliminado exitosamente`);
       res.json({ status: 'ok', message: 'Lead eliminado correctamente' });
     } catch (error) {
@@ -268,8 +268,7 @@ export const LeadController = {
   // Endpoint adicional para obtener opciones únicas (útil para filtros en frontend)
   getFilterOptions: async (req, res) => {
     try {
-      console.log('📥 Solicitud GET /api/leads/options');
-      
+
       const [estados, origenes, ciudades, responsables, fuentes] = await Promise.all([
         LeadModel.getUniqueValues('estado'),
         LeadModel.getUniqueValues('origen'),
@@ -292,5 +291,115 @@ export const LeadController = {
       console.error(' Error obteniendo opciones de filtro:', error);
       res.status(500).json({ status: 'error', message: 'Error obteniendo opciones' });
     }
-  }
+  },
+  assignResponsable: async (req, res) => {
+    try {
+      const { LeadId, responsable } = await LeadModel.responsable(req.params.id, req.body.responsable);
+
+    } catch (error) {
+
+    }
+  },
+  importcsv: async (req, res) => {
+    try {
+      console.log('Iniciando importación CSV...');
+
+      if (!req.file) {
+        return res.status(400).json({ error: "No se subió ningún archivo" });
+      }
+
+      console.log('Archivo recibido:', req.file.originalname);
+
+      const csvBuffer = req.file.buffer.toString();
+      const valid = [];
+      const invalid = [];
+
+      parse(
+        csvBuffer,
+        {
+          columns: true,
+          skip_empty_lines: true,
+          trim: true,
+          delimiter: ',',
+        },
+        async (err, rows) => {
+          if (err) {
+            console.error('Error parseando CSV:', err);
+            return res.status(500).json({ error: "Error al procesar CSV: " + err.message });
+          }
+
+          console.log(`Procesando ${rows.length} filas del CSV...`);
+
+          rows.forEach((row, index) => {
+            const { nombre, email, telefono, origen, campaña } = row;
+
+            // Validaciones básicas
+            if (!nombre || !email) {
+              invalid.push({
+                row: index + 1,
+                ...row,
+                error: "Nombre y Email son obligatorios",
+              });
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+              invalid.push({
+                row: index + 1,
+                ...row,
+                error: "Formato de email inválido",
+              });
+            } else {
+              valid.push({
+                nombre: nombre.trim(),
+                email: email.trim().toLowerCase(),
+                telefono: telefono?.trim() || '',
+                origen: origen?.trim() || '',
+                campaña: campaña?.trim() || ''
+              });
+            }
+          });
+
+          console.log(`Registros válidos: ${valid.length}, inválidos: ${invalid.length}`);
+
+          try {
+            let insertedLeads = [];
+
+            if (valid.length > 0) {
+              // Opción 1: Inserción masiva rápida (usar si no te preocupan emails duplicados)
+              // insertedLeads = await LeadModel.bulkCreate(valid);
+
+              // Opción 2: Inserción segura que maneja duplicados
+              const result = await LeadModel.bulkCreateSafe(valid);
+              insertedLeads = result.inserted;
+
+              // Agregar errores de inserción a la lista de inválidos
+              if (result.errors && result.errors.length > 0) {
+                invalid.push(...result.errors);
+              }
+
+              console.log(`${insertedLeads.length} registros insertados en la BD`);
+            }
+
+            return res.json({
+              message: "Archivo procesado exitosamente",
+              insertados: insertedLeads.length,
+              rechazados: invalid.length,
+              invalid: invalid.length > 0 ? invalid : [],
+              leads: insertedLeads
+            });
+
+          } catch (dbError) {
+            console.error('Error en base de datos:', dbError);
+            return res.status(500).json({
+              error: "Error al guardar en base de datos",
+              detail: dbError.message
+            });
+          }
+        }
+      );
+    } catch (error) {
+      console.error('Error general en importCSV:', error);
+      res.status(500).json({ error: "Error interno del servidor: " + error.message });
+    }
+  },
+
+
 };

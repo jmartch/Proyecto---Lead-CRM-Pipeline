@@ -6,7 +6,7 @@ dotenv.config();
 /**
  * @swagger
  * components:
- *   schemas:
+ *   schemas :
  *     Lead:
  *       type: object
  *       properties:

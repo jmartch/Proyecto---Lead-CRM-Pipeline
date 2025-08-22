@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { LeadController } from '../controllers/leads.controllers.js';
+import { upload } from '../middlewares/import.middleware.js';
 
 const router = Router();
 // GET /api/leads - Obtener leads con filtros opcionales
@@ -163,5 +164,13 @@ router.delete('/:id', LeadController.delete);
  *         description: Opciones disponibles
  */
 router.get('/options', LeadController.getFilterOptions);
+
+router.post('/importcsv', upload.single('file'), LeadController.importcsv);
+
+//router.get('/export', LeadController.exportcsv);
+
+router.put('/:id/responsable', LeadController.assignResponsable);
+
+//router.put('/api/leads/:id/responsable', LeadController.updateResponsable);
 
 export default router;

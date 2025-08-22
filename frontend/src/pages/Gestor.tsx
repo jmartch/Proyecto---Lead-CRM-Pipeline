@@ -1,6 +1,10 @@
 import type { FormEvent } from 'react';
 import { useEffect, useState } from 'react';
 import '../global.css';
+import '../utils/Gestor.css';
+import Button from '../components/buttons/Button';
+import Importcsv from '../components/inputs/Importcsv';
+import { useNavigate } from "react-router-dom";
 
 // Tipos de datos
 interface Lead {
@@ -11,6 +15,8 @@ interface Lead {
   origen: string;
   campaña: string;
   fecha?: string;
+  responsable?: string;
+  estado?: string;
 }
 
 interface Message {
@@ -29,28 +35,37 @@ export default function Gestor() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<Message | null>(null);
+  const navigate = useNavigate();
 
   // Validación de email básica
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+  // Función para recargar leads
+  const reloadLeads = async () => {
+    try {
+      const response = await fetch(import.meta.env.VITE_API_URL + '/api/leads',{
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await response.json();
+      console.log("Datos recibidos:", data);
+
+      if (Array.isArray(data)) {
+        setLeads(data);
+      } else if (data && Array.isArray(data.leads)) {
+        setLeads(data.leads);
+      } else {
+        setLeads([]);
+      }
+    } catch (err) {
+      console.error("Error cargando leads:", err);
+      setMessage({ type: 'error', text: 'Error cargando leads' });
+    }
+  };
+
   // Cargar leads al iniciar
   useEffect(() => {
-    fetch(import.meta.env.VITE_API_URL + '/api/leads')
-      .then(r => r.json())
-      .then(data => {
-
-        if (Array.isArray(data)) {
-          setLeads(data);
-        } else if (data && Array.isArray(data.leads)) {
-          setLeads(data.leads);
-        } else {
-          setLeads([]);
-        }
-      })
-      .catch(err => {
-        console.error("Error cargando leads:", err);
-        setMessage({ type: 'error', text: 'Error cargando leads' });
-      });
+    reloadLeads();
   }, []);
 
   // Mostrar mensajes temporales
@@ -79,7 +94,6 @@ export default function Gestor() {
     }
     return true;
   };
-
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -111,7 +125,6 @@ export default function Gestor() {
       setIsLoading(false);
     }
   }
-
 
   return (
     <div className="Gestor">
@@ -165,6 +178,7 @@ export default function Gestor() {
         </div>
       )}
 
+
       {/* Tabla de leads */}
       <table className="leads-table">
         <thead>
@@ -198,6 +212,26 @@ export default function Gestor() {
         </div>
       )}
 
+      {/* Botón cerrar sesión */}
+      <div style={{ position: "absolute", top: "20px", left: "50px" }}>
+        <Button onClick={() => navigate('/')} disabled={isLoading}>
+          Cerrar Sesión
+        </Button>
+      </div>
+      {/* Componente de importación CSV */}
+      <div>
+        <Importcsv
+          onImportSuccess={(data) => {
+            showMessage('success', `Importación completada: ${data.insertados} registros insertados`);
+            // Recargar la lista de leads después de importar
+            reloadLeads();
+          }}
+          onImportError={(error) => {
+            console.error("Error al importar:", error);
+            showMessage('error', "Error al importar: " + error);
+          }}
+        />
+      </div>
       {/* Animaciones */}
       <style>{`
         @keyframes spin {

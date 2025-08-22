@@ -92,7 +92,142 @@ export const LeadModel = {
       throw error;
     }
   },
+  async bulkCreate(leads) {
+    try {
+      if (!leads || leads.length === 0) {
+        return [];
+      }
 
+      // Construir la consulta de inserción múltiple
+      const placeholders = leads.map(() => '(?, ?, ?, ?, ?)').join(', ');
+      const values = leads.flatMap(lead => [
+        lead.nombre,
+        lead.email,
+        lead.telefono,
+        lead.origen,
+        lead.campaña
+      ]);
+
+      const query = `
+      INSERT INTO leads (nombre, email, telefono, origen, campaña) 
+      VALUES ${placeholders}
+    `;
+
+      console.log('Ejecutando inserción masiva para', leads.length, 'registros');
+
+      const [result] = await pool.query(query, values);
+
+      console.log('Inserción masiva completada:', result);
+
+      // Obtener los IDs insertados y devolver los registros completos
+      if (result.insertId && result.affectedRows) {
+        const insertedLeads = [];
+        const startId = result.insertId;
+
+        for (let i = 0; i < result.affectedRows; i++) {
+          insertedLeads.push({
+            id: startId + i,
+            ...leads[i],
+            fecha: new Date().toISOString().slice(0, 19).replace('T', ' ') // Formato MySQL datetime
+          });
+        }
+
+        return insertedLeads;
+      }
+
+      return [];
+
+    } catch (error) {
+      console.error('Error en bulkCreate:', error);
+      throw error;
+    }
+  },
+
+  // También puedes agregar una versión más robusta que maneja duplicados
+  async bulkCreateSafe(leads) {
+    try {
+      if (!leads || leads.length === 0) {
+        return [];
+      }
+
+      const insertedLeads = [];
+      const errors = [];
+
+      // Insertar uno por uno para manejar mejor los errores
+      for (let i = 0; i < leads.length; i++) {
+        try {
+          const lead = leads[i];
+
+          // Verificar si el email ya existe
+          const [existing] = await pool.query(
+            'SELECT id FROM leads WHERE email = ?',
+            [lead.email]
+          );
+
+          if (existing.length > 0) {
+            errors.push({
+              ...lead,
+              error: 'Email ya existe en la base de datos'
+            });
+            continue;
+          }
+
+          // Insertar el nuevo lead
+          const [result] = await pool.query(
+            'INSERT INTO leads (nombre, email, telefono, origen, campaña) VALUES (?, ?, ?, ?, ?)',
+            [lead.nombre, lead.email, lead.telefono, lead.origen, lead.campaña]
+          );
+
+          if (result.insertId) {
+            insertedLeads.push({
+              id: result.insertId,
+              ...lead,
+              fecha: new Date().toISOString().slice(0, 19).replace('T', ' ')
+            });
+          }
+
+        } catch (insertError) {
+          console.error(`Error insertando lead ${i}:`, insertError);
+          errors.push({
+            ...leads[i],
+            error: insertError.message
+          });
+        }
+      }
+
+      console.log(`Inserción completada: ${insertedLeads.length} exitosos, ${errors.length} errores`);
+
+      return {
+        inserted: insertedLeads,
+        errors: errors
+      };
+
+    } catch (error) {
+      console.error('Error en bulkCreateSafe:', error);
+      throw error;
+    }
+  },
+  create: async (leadData) => {
+    const {
+      nombre, email, telefono, origen, campaña,
+      ciudad, fuente_detallada, tags, responsable, estado
+    } = leadData;
+
+    const [result] = await pool.query(
+      `INSERT INTO leads 
+      (nombre, email, telefono, origen, campaña) 
+     VALUES (?, ?, ?, ?, ?)`, // ✅ Solo 5 placeholders ahora
+      [
+        nombre || null,
+        email || null,
+        telefono || null,
+        origen || null,
+        campaña || null,
+      ]
+    );
+
+    return result.insertId;
+  },
   async getAll() {
     try {
       const [rows] = await pool.query('SELECT * FROM leads ORDER BY fecha DESC');
@@ -195,6 +330,18 @@ export const LeadModel = {
       throw error;
     }
   },
+  async responsable(id, responsable) {
+    try {
+      const [result] = await pool.query(
+        `UPDATE leads SET responsable=? WHERE id=?`,
+        [responsable, id]
+      );
+      return result.affectedRows > 0;
+    } catch (error) {
+      console.error('Error en LeadModel.responsable:', error);
+      throw error;
+    }
+  },
 
   // Métodos auxiliares para obtener opciones únicas
   async getUniqueValues(field) {
@@ -212,5 +359,5 @@ export const LeadModel = {
       console.error(`Error obteniendo valores únicos para ${field}:`, error);
       throw error;
     }
-  }
+  },
 };
