@@ -1,0 +1,87 @@
+.leads-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: #4ecdc4;
+  font-size: 16px;
+}
+
+.leads-table th,
+.leads-table td {
+  padding: 10px 15px;
+  text-align: center;
+  border: 1px solid #ccc;
+}
+
+.leads-table-body {
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+  .leads-table,
+  .leads-table thead,
+  .leads-table tbody,
+  .leads-table th,
+  .leads-table td,
+  .leads-table tr {
+    display: block;
+    width: 100%;
+  }
+
+  .leads-table thead {
+    display: none; /* ocultamos encabezados */
+  }
+
+  .leads-table tr {
+    margin-bottom: 15px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 10px;
+  }
+
+  .leads-table td {
+    text-align: left;
+    border: none;
+    border-bottom: 1px solid #eee;
+    position: relative;
+    padding-left: 50%;
+    min-height: 40px;
+  }
+
+  .leads-table td::before {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 45%;
+    white-space: nowrap;
+    font-weight: bold;
+    color: #555;
+    content: attr(data-label);
+  }
+}
+.bulk-action-btn{
+  display: inline-block;
+  padding: 8px 12pxs;
+}
+
+.bulk-actions-tex{
+  padding: 8px 12px;
+}
+
+.bulk-action-btn assign-btn{
+  padding: auto;
+}
+
+.bulk-action-btn delete-btn{
+  gap: 10px;
+  background-color: #ff4d4f;
+}
+
+.bulk-buttons-container{
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}

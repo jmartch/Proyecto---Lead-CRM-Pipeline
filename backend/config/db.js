@@ -79,6 +79,30 @@ dotenv.config();
  *           type: string
  *           format: date-time
  *           description: Fecha de creación del usuario.
+ *
+ *     Historial:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: ID único del registro en historial.
+ *         lead_id:
+ *           type: integer
+ *           description: ID del lead relacionado.
+ *         usuario_id:
+ *           type: integer
+ *           description: ID del usuario que creó la interacción.
+ *         tipo:
+ *           type: string
+ *           enum: [nota, llamada, email, estado, asignacion]
+ *           description: Tipo de interacción registrada.
+ *         contenido:
+ *           type: string
+ *           description: Detalle o contenido de la interacción.
+ *         creado:
+ *           type: string
+ *           format: date-time
+ *           description: Fecha en que se registró el historial.
  */
 
 
@@ -98,15 +122,14 @@ export const poolusers = mysql.createPool({
   database: 'usuarios_crm'
 });
 
-/**
- * @function initializeDatabase
- * @description Inicializa las bases de datos `lead_crm` y `usuarios_crm`.
- *  - Crea las bases si no existen.
- *  - Genera las tablas `leads` y `usuarios` con sus restricciones.
- *  - Verifica y agrega columnas adicionales si no existen (`fuente_detallada`, `tags`, `fecha_actualizacion`).
- *  - Crea índices únicos para asegurar emails no duplicados.
- *  - Muestra conteo de registros en consola.
- */
+//POOL HISTORIAL 
+export const poolhistorial = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: 'historial_crm'
+});
+
 
 export async function initializeDatabase() {
   let connection;
@@ -195,6 +218,23 @@ export async function initializeDatabase() {
       }
     }
 
+        /*DB: usuarios_crm */
+    await connection.query('CREATE DATABASE IF NOT EXISTS historial_crm');
+    await connection.query('USE historial_crm');
+
+    await connection.query(`
+CREATE TABLE IF NOT EXISTS historial (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  lead_id INT,
+  usuario_id INT,
+  tipo ENUM('nota','llamada','email','estado','asignacion'),
+  contenido TEXT,
+  creado TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (lead_id) REFERENCES lead_crm.leads(id),
+  FOREIGN KEY (usuario_id) REFERENCES usuarios_crm.usuarios(id)
+)
+    `);
+
     // Conteo de registros
     const [[{ count: leadsCount }]] = await connection.query('SELECT COUNT(*) as count FROM lead_crm.leads');
     console.log(`Número de registros en lead_crm.leads: ${leadsCount}`);
@@ -202,8 +242,11 @@ export async function initializeDatabase() {
     const [[{ count: usersCount }]] = await connection.query('SELECT COUNT(*) as count FROM usuarios_crm.usuarios');
     console.log(`Número de registros en usuarios_crm.usuarios: ${usersCount}`);
 
+    const [[{ count: historialCount }]] = await connection.query('SELECT COUNT(*) as count FROM historial_crm.historial');
+    console.log(`Número de registros en historial_crm.historial: ${historialCount}`);
 
-    await connection.end(); // ⬅️ Cierra recién aquí
+
+    await connection.end(); // Cierra recién aquí
     console.log('Bases de datos conectadas correctamente ✅');
 
     await connection.end();

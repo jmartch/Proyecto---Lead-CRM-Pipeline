@@ -4,6 +4,8 @@ import '../global.css';
 import '../utils/Gestor.css';
 import Button from '../components/buttons/Button';
 import Importcsv from '../components/inputs/Importcsv';
+import Exportcsv from '../components/export/Exportcsv';
+import Table from '../components/Table/Table';
 import { useNavigate } from "react-router-dom";
 
 // Tipos de datos
@@ -26,6 +28,7 @@ interface Message {
 
 export default function Gestor() {
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [selectedLeads, setSelectedLeads] = useState<Lead[]>([]);
   const [form, setForm] = useState<Lead>({
     nombre: '',
     email: '',
@@ -43,7 +46,7 @@ export default function Gestor() {
   // Función para recargar leads
   const reloadLeads = async () => {
     try {
-      const response = await fetch(import.meta.env.VITE_API_URL + '/api/leads',{
+      const response = await fetch(import.meta.env.VITE_API_URL + '/api/leads', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -125,6 +128,195 @@ export default function Gestor() {
       setIsLoading(false);
     }
   }
+  const handleSelectionChange = (selectedLeadsData: Lead[]) => {
+    setSelectedLeads(selectedLeadsData);
+  };
+
+  // Estados adicionales para modals y bulk actions
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [assignResponsable, setAssignResponsable] = useState('');
+  const [bulkEditData, setBulkEditData] = useState({ estado: '', responsable: '' });
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Función para eliminar leads en lote
+  const handleBulkDelete = async () => {
+    if (selectedLeads.length === 0) {
+      showMessage('error', 'Selecciona al menos un lead');
+      return;
+    }
+
+    const confirmDelete = window.confirm(
+      `¿Estás seguro de que quieres eliminar ${selectedLeads.length} lead${selectedLeads.length > 1 ? 's' : ''}?`
+    );
+
+    if (!confirmDelete) return;
+
+    setIsProcessing(true);
+    let successCount = 0;
+    let errorCount = 0;
+
+    try {
+      for (const lead of selectedLeads) {
+        try {
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead.id}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+          });
+
+          if (response.ok) {
+            successCount++;
+          } else {
+            errorCount++;
+          }
+        } catch (error) {
+          console.error(`Error eliminando lead ${lead.id}:`, error);
+          errorCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        showMessage('success', `${successCount} lead${successCount > 1 ? 's' : ''} eliminado${successCount > 1 ? 's' : ''} correctamente`);
+        reloadLeads();
+        setSelectedLeads([]);
+      }
+
+      if (errorCount > 0) {
+        showMessage('error', `Error eliminando ${errorCount} lead${errorCount > 1 ? 's' : ''}`);
+      }
+    } catch (error) {
+      console.error('Error en eliminación masiva:', error);
+      showMessage('error', 'Error durante la eliminación masiva');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Función para asignar responsable en lote
+  const handleBulkAssign = async () => {
+    if (!assignResponsable.trim()) {
+      showMessage('error', 'Ingresa el nombre del responsable');
+      return;
+    }
+
+    setIsProcessing(true);
+    let successCount = 0;
+    let errorCount = 0;
+
+    try {
+      for (const lead of selectedLeads) {
+        try {
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead.id}/responsable`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ responsable: assignResponsable })
+          });
+
+          if (response.ok) {
+            successCount++;
+          } else {
+            errorCount++;
+          }
+        } catch (error) {
+          console.error(`Error asignando responsable a lead ${lead.id}:`, error);
+          errorCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        showMessage('success', `Responsable asignado a ${successCount} lead${successCount > 1 ? 's' : ''}`);
+        reloadLeads();
+        setSelectedLeads([]);
+        setShowAssignModal(false);
+        setAssignResponsable('');
+      }
+
+      if (errorCount > 0) {
+        showMessage('error', `Error asignando responsable a ${errorCount} lead${errorCount > 1 ? 's' : ''}`);
+      }
+    } catch (error) {
+      console.error('Error en asignación masiva:', error);
+      showMessage('error', 'Error durante la asignación masiva');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Función para editar leads en lote
+  const handleBulkEdit = async () => {
+    if (!bulkEditData.estado && !bulkEditData.responsable) {
+      showMessage('error', 'Selecciona al menos un campo para editar');
+      return;
+    }
+
+    setIsProcessing(true);
+    let successCount = 0;
+    let errorCount = 0;
+
+    try {
+      for (const lead of selectedLeads) {
+        try {
+          const updateData: any = {};
+          if (bulkEditData.estado) updateData.estado = bulkEditData.estado;
+          if (bulkEditData.responsable) updateData.responsable = bulkEditData.responsable;
+
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updateData)
+          });
+
+          if (response.ok) {
+            successCount++;
+          } else {
+            errorCount++;
+          }
+        } catch (error) {
+          console.error(`Error editando lead ${lead.id}:`, error);
+          errorCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        showMessage('success', `${successCount} lead${successCount > 1 ? 's' : ''} editado${successCount > 1 ? 's' : ''} correctamente`);
+        reloadLeads();
+        setSelectedLeads([]);
+        setShowEditModal(false);
+        setBulkEditData({ estado: '', responsable: '' });
+      }
+
+      if (errorCount > 0) {
+        showMessage('error', `Error editando ${errorCount} lead${errorCount > 1 ? 's' : ''}`);
+      }
+    } catch (error) {
+      console.error('Error en edición masiva:', error);
+      showMessage('error', 'Error durante la edición masiva');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+  // Función para realizar acciones en lote
+  const handleBulkAction = (action: string) => {
+    if (selectedLeads.length === 0) {
+      showMessage('error', 'Selecciona al menos un lead');
+      return;
+    }
+
+    switch (action) {
+      case 'delete':
+        handleBulkDelete();
+        break;
+      case 'assign':
+        setShowAssignModal(true);
+        break;
+      case 'edit':
+        setShowEditModal(true);
+        break;
+      default:
+        break;
+    }
+  };
+
 
   return (
     <div className="Gestor">
@@ -178,33 +370,144 @@ export default function Gestor() {
         </div>
       )}
 
+      {selectedLeads.length > 0 && (
+        <div className="bulk-actions">
+          <span className="bulk-actions-text">
+            {selectedLeads.length} lead{selectedLeads.length > 1 ? 's' : ''} seleccionado{selectedLeads.length > 1 ? 's' : ''}:
+          </span>
+          <button
+            onClick={() => handleBulkAction('assign')}
+            className="bulk-action-btn assign-btn"
+            disabled={isLoading || isProcessing}
+          >
+            {isProcessing ? 'Procesando...' : 'Asignar Responsable'}
+          </button>
+          <button
+            onClick={() => handleBulkAction('edit')}
+            className="bulk-action-btn edit-btn"
+            disabled={isLoading || isProcessing}
+          >
+            {isProcessing ? 'Procesando...' : 'Editar Lote'}
+          </button>
+          <button
+            onClick={() => handleBulkAction('export')}
+            className="bulk-action-btn export-btn"
+            disabled={isLoading || isProcessing}
+          >
+            Exportar Selección
+          </button>
+          <button
+            onClick={() => handleBulkAction('delete')}
+            className="bulk-action-btn delete-btn"
+            disabled={isLoading || isProcessing}
+          >
+            {isProcessing ? 'Eliminando...' : 'Eliminar'}
+          </button>
+        </div>
+      )}
+      {/* Componente de tabla con todas las funcionalidades */}
+      <Table
+        leads={leads}
+        onSelectionChange={handleSelectionChange}
+        isLoading={isLoading}
+      />
+      {/* Modal para asignar responsable */}
+      {showAssignModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Asignar Responsable</h3>
+            <p>Asignar responsable a {selectedLeads.length} lead{selectedLeads.length > 1 ? 's' : ''}:</p>
+            <input
+              type="text"
+              value={assignResponsable}
+              onChange={(e) => setAssignResponsable(e.target.value)}
+              placeholder="Nombre del responsable"
+              className="modal-input"
+              disabled={isProcessing}
+            />
+            <div className="modal-buttons">
+              <button
+                onClick={() => {
+                  setShowAssignModal(false);
+                  setAssignResponsable('');
+                }}
+                className="modal-btn cancel-btn"
+                disabled={isProcessing}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleBulkAssign}
+                className="modal-btn confirm-btn"
+                disabled={isProcessing || !assignResponsable.trim()}
+              >
+                {isProcessing ? 'Asignando...' : 'Asignar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Tabla de leads */}
-      <table className="leads-table">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Email</th>
-            <th>Teléfono</th>
-            <th>Origen</th>
-            <th>Campaña</th>
-            <th>Fecha</th>
-          </tr>
-        </thead>
-        <tbody className="leads-table-body">
-          {leads.map(l => (
-            <tr key={l.id}>
-              <td>{l.nombre}</td>
-              <td>{l.email}</td>
-              <td>{l.telefono}</td>
-              <td>{l.origen}</td>
-              <td>{l.campaña}</td>
-              <td>{l.fecha ? new Date(l.fecha).toLocaleDateString('es-ES') : ''}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {/* Modal para editar en lote */}
+      {showEditModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Editar Leads en Lote</h3>
+            <p>Editar {selectedLeads.length} lead{selectedLeads.length > 1 ? 's' : ''}:</p>
 
+            <div className="modal-form">
+              <label>
+                Estado:
+                <select
+                  value={bulkEditData.estado}
+                  onChange={(e) => setBulkEditData(prev => ({ ...prev, estado: e.target.value }))}
+                  className="modal-select"
+                  disabled={isProcessing}
+                >
+                  <option value="">Sin cambios</option>
+                  <option value="nuevo">Nuevo</option>
+                  <option value="contactado">Contactado</option>
+                  <option value="en_negociacion">En Negociación</option>
+                  <option value="cerrado_ganado">Cerrado Ganado</option>
+                  <option value="cerrado_perdido">Cerrado Perdido</option>
+                </select>
+              </label>
+
+              <label>
+                Responsable:
+                <input
+                  type="text"
+                  value={bulkEditData.responsable}
+                  onChange={(e) => setBulkEditData(prev => ({ ...prev, responsable: e.target.value }))}
+                  placeholder="Nombre del responsable"
+                  className="modal-input"
+                  disabled={isProcessing}
+                />
+              </label>
+            </div>
+
+            <div className="modal-buttons">
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setBulkEditData({ estado: '', responsable: '' });
+                }}
+                className="modal-btn cancel-btn"
+                disabled={isProcessing}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleBulkEdit}
+                className="modal-btn confirm-btn"
+                disabled={isProcessing || (!bulkEditData.estado && !bulkEditData.responsable)}
+              >
+                {isProcessing ? 'Editando...' : 'Actualizar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Mensaje si no hay datos */}
       {leads.length === 0 && (
         <div className="text-center">
@@ -213,13 +516,13 @@ export default function Gestor() {
       )}
 
       {/* Botón cerrar sesión */}
-      <div style={{ position: "absolute", top: "20px", left: "50px" }}>
+      <div style={{ position: "absolute", bottom: "20px", left: "90px" }}>
         <Button onClick={() => navigate('/')} disabled={isLoading}>
           Cerrar Sesión
         </Button>
       </div>
-      {/* Componente de importación CSV */}
-      <div>
+      {/* Boton importación CSV */}
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '20px', gap: '20px', marginTop: '20px' }}>
         <Importcsv
           onImportSuccess={(data) => {
             showMessage('success', `Importación completada: ${data.insertados} registros insertados`);
@@ -231,6 +534,8 @@ export default function Gestor() {
             showMessage('error', "Error al importar: " + error);
           }}
         />
+        <Exportcsv />
+
       </div>
       {/* Animaciones */}
       <style>{`

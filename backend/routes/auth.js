@@ -4,7 +4,6 @@ import { verifyToken, verifyAdmin } from '../middlewares/auth.middlewares.js';
 
 const router = Router();
 
-
 /**
  * @swagger
  * tags:
@@ -18,29 +17,6 @@ const router = Router();
  *   post:
  *     summary: Registrar un nuevo usuario
  *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - nombre
- *               - email
- *               - password
- *             properties:
- *               nombre:
- *                 type: string
- *               email:
- *                 type: string
- *                 format: email
- *               password:
- *                 type: string
- *     responses:
- *       201:
- *         description: Usuario registrado correctamente
- *       400:
- *         description: Faltan campos o el usuario ya existe
  */
 router.post('/register', registerUser);
 
@@ -50,41 +26,39 @@ router.post('/register', registerUser);
  *   post:
  *     summary: Iniciar sesión
  *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *               password:
- *                 type: string
- *     responses:
- *       200:
- *         description: Login exitoso, devuelve un token JWT
- *       400:
- *         description: Credenciales inválidas o faltantes
  */
 router.post('/login', loginUser);
-
 
 /**
  * @swagger
  * /api/users:
  *   get:
- *     summary: Obtener todos los usuarios
+ *     summary: Obtener todos los usuarios (con filtros y paginación)
  *     tags: [Auth]
- *     responses:
- *       200:
- *         description: Lista de usuarios
+ *     parameters:
+ *       - name: nombre
+ *         in: query
+ *         schema: { type: string }
+ *       - name: email
+ *         in: query
+ *         schema: { type: string }
+ *       - name: rol
+ *         in: query
+ *         schema: { type: string }
+ *       - name: page
+ *         in: query
+ *         schema: { type: integer }
+ *       - name: limit
+ *         in: query
+ *         schema: { type: integer }
+ *       - name: sort_by
+ *         in: query
+ *         schema: { type: string, enum: [nombre, email, rol, creado] }
+ *       - name: sort_order
+ *         in: query
+ *         schema: { type: string, enum: [ASC, DESC] }
  */
-router.get('/', authController.getAllUsers);
+router.get('/', verifyToken, authController.getAllUsers);
 
 /**
  * @swagger
@@ -92,19 +66,8 @@ router.get('/', authController.getAllUsers);
  *   get:
  *     summary: Obtener un usuario por ID
  *     tags: [Auth]
- *     parameters:
- *       - name: id
- *         in: path
- *         required: true
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Usuario encontrado
- *       404:
- *         description: Usuario no encontrado
  */
-router.get('/users/:id', authController.getUserById);
+router.get('/:id', verifyToken, authController.getUserById);
 
 /**
  * @swagger
@@ -112,34 +75,8 @@ router.get('/users/:id', authController.getUserById);
  *   put:
  *     summary: Actualizar un usuario
  *     tags: [Auth]
- *     parameters:
- *       - name: id
- *         in: path
- *         required: true
- *         schema:
- *           type: integer
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               nombre:
- *                 type: string
- *               email:
- *                 type: string
- *               password:
- *                 type: string
- *               rol:
- *                 type: string
- *     responses:
- *       200:
- *         description: Usuario actualizado
- *       404:
- *         description: Usuario no encontrado
  */
-router.put('/users/:id', verifyToken, authController.updateUser); // 👤 cualquier user puede editar su perfil (menos role)
+router.put('/:id', verifyToken, authController.updateUser);
 
 /**
  * @swagger
@@ -147,19 +84,8 @@ router.put('/users/:id', verifyToken, authController.updateUser); // 👤 cualqu
  *   delete:
  *     summary: Eliminar un usuario
  *     tags: [Auth]
- *     parameters:
- *       - name: id
- *         in: path
- *         required: true
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Usuario eliminado correctamente
- *       404:
- *         description: Usuario no encontrado
  */
-router.delete('/users/:id', authController.deleteUser);
+router.delete('/:id', verifyAdmin, authController.deleteUser);
 
 /**
  * @swagger
@@ -167,31 +93,7 @@ router.delete('/users/:id', authController.deleteUser);
  *   patch:
  *     summary: Cambiar el rol de un usuario
  *     tags: [Auth]
- *     parameters:
- *       - name: id
- *         in: path
- *         required: true
- *         schema:
- *           type: integer
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - rol
- *             properties:
- *               rol:
- *                 type: string
- *     responses:
- *       200:
- *         description: Rol actualizado correctamente
- *       400:
- *         description: Faltan datos
- *       404:
- *         description: Usuario no encontrado
  */
-router.put('/users/:id/role', verifyAdmin, authController.changeUserRole); // 🔐 solo admin cambia roles
+router.patch('/:id/role', verifyAdmin, authController.changeUserRole);
 
 export default router;

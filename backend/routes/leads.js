@@ -3,20 +3,6 @@ import { LeadController } from '../controllers/leads.controllers.js';
 import { upload } from '../middlewares/import.middleware.js';
 
 const router = Router();
-// GET /api/leads - Obtener leads con filtros opcionales
-// Parámetros de query soportados:
-// - estado: nuevo, contactado, en_negociacion, cerrado_ganado, cerrado_perdido
-// - origen: filtro por origen (LIKE)
-// - fecha_desde: YYYY-MM-DD
-// - fecha_hasta: YYYY-MM-DD
-// - responsable: nombre del responsable
-// - ciudad: filtro por ciudad (LIKE)
-// - fuente_detallada: filtro por fuente detallada (LIKE)
-// - page: número de página (default: 1)
-// - limit: registros por página (default: 10)
-// - sort_by: campo de ordenamiento (fecha, nombre, email, estado, ciudad, responsable, fecha_actualizacion)
-// - sort_order: ASC o DESC (default: DESC)
-
 
 
 /**
