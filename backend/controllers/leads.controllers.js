@@ -300,6 +300,14 @@ export const LeadController = {
 
     }
   },
+  updateState: async (res,req)=>{
+    try {
+      
+    } catch (error) {
+      console.error('Error actualizando estado del lead:', error);
+      res.status(500).json({ status: 'error', message: 'Error actualizando estado del lead' });
+    }
+  },
   importcsv: async (req, res) => {
     try {
       console.log('Iniciando importación CSV...');
@@ -363,10 +371,7 @@ export const LeadController = {
             let insertedLeads = [];
 
             if (valid.length > 0) {
-              // Opción 1: Inserción masiva rápida (usar si no te preocupan emails duplicados)
-              // insertedLeads = await LeadModel.bulkCreate(valid);
 
-              // Opción 2: Inserción segura que maneja duplicados
               const result = await LeadModel.bulkCreateSafe(valid);
               insertedLeads = result.inserted;
 

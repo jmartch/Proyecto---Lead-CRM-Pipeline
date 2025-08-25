@@ -342,6 +342,24 @@ export const LeadModel = {
       throw error;
     }
   },
+  async state(id, estado) {
+    try {
+      const estadosValidos = ['nuevo', 'contactado', 'en_negociacion', 'cerrado_ganado', 'cerrado_perdido'];
+
+      if (!estadosValidos.includes(estado)) {
+        throw new Error('INVALID_STATE');
+      }
+
+      const [result] = await pool.query(
+        `UPDATE leads SET estado=? WHERE id=?`,
+        [estado, id]
+      );
+      return result.affectedRows > 0;
+    } catch (error) {
+      console.error('Error en LeadModel.state:', error);
+      throw error;
+    }
+  },
 
   // Métodos auxiliares para obtener opciones únicas
   async getUniqueValues(field) {

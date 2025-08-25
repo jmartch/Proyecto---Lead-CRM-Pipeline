@@ -60,6 +60,7 @@ export const validateLeadData = (leadData, isUpdate = false) => {
     errors.push('El estado no es válido');
   }
 
+
   // Validaciones de longitud
   if (origen && origen.length > 100) errors.push('El origen no puede exceder 100 caracteres');
   if (campaña && campaña.length > 100) errors.push('La campaña no puede exceder 100 caracteres');
@@ -68,4 +69,13 @@ export const validateLeadData = (leadData, isUpdate = false) => {
   if (responsable && responsable.length > 100) errors.push('El responsable no puede exceder 100 caracteres');
 
   return errors;
+};
+  export const sanitizeInput = (input) => {
+    if (typeof input !== 'string') return input;
+    
+    return input
+        .trim()
+        .replace(/[<>]/g, '') // Remover < y >
+        .replace(/javascript:/gi, '') // Remover javascript:
+        .replace(/on\w+=/gi, ''); // Remover event handlers
 };

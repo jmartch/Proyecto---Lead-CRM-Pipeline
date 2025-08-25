@@ -171,6 +171,7 @@ router.post('/importcsv', upload.single('file'), LeadController.importcsv);
 
 router.put('/:id/responsable', LeadController.assignResponsable);
 
+router.put('/:id/responsable/state', LeadController.updateState);
 //router.put('/api/leads/:id/responsable', LeadController.updateResponsable);
 
 export default router;

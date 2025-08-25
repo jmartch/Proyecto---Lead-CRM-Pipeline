@@ -160,6 +160,8 @@ export async function initializeDatabase() {
       console.log('Columna fecha_actualizacion agregada en leads');
     }
 
+
+
     // Índice único en leads
     try {
       await connection.query('ALTER TABLE leads ADD UNIQUE INDEX leads_email_unique (email)');
@@ -200,6 +202,10 @@ export async function initializeDatabase() {
     const [[{ count: usersCount }]] = await connection.query('SELECT COUNT(*) as count FROM usuarios_crm.usuarios');
     console.log(`Número de registros en usuarios_crm.usuarios: ${usersCount}`);
 
+
+    await connection.end(); // ⬅️ Cierra recién aquí
+    console.log('Bases de datos conectadas correctamente ✅');
+
     await connection.end();
     console.log('Bases de datos conectadas correctamente ✅');
   } catch (error) {
@@ -207,4 +213,5 @@ export async function initializeDatabase() {
     if (connection) await connection.end();
     process.exit(1);
   }
+
 }
