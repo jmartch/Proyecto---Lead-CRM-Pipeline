@@ -378,4 +378,86 @@ export const LeadModel = {
       throw error;
     }
   },
+  async getAllForExport(filters = {}) {
+  try {
+    const {
+      estado,
+      origen,
+      fecha_desde,
+      fecha_hasta,
+      responsable,
+      ciudad,
+      fuente_detallada
+    } = filters;
+
+    // Construir filtros WHERE
+    let whereClauses = [];
+    let params = [];
+    
+    if (estado) {
+      whereClauses.push('estado = ?');
+      params.push(estado);
+    }
+    if (origen) {
+      whereClauses.push('origen LIKE ?');
+      params.push(`%${origen}%`);
+    }
+    if (fecha_desde) {
+      whereClauses.push('fecha >= ?');
+      params.push(fecha_desde);
+    }
+    if (fecha_hasta) {
+      whereClauses.push('fecha <= ?');
+      params.push(fecha_hasta + ' 23:59:59');
+    }
+    if (responsable) {
+      whereClauses.push('responsable = ?');
+      params.push(responsable);
+    }
+    if (ciudad) {
+      whereClauses.push('ciudad LIKE ?');
+      params.push(`%${ciudad}%`);
+    }
+    if (fuente_detallada) {
+      whereClauses.push('fuente_detallada LIKE ?');
+      params.push(`%${fuente_detallada}%`);
+    }
+
+    const whereSQL = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
+
+    // Query para obtener TODOS los registros (sin LIMIT)
+    const query = `
+      SELECT 
+        id,
+        nombre,
+        email,
+        telefono,
+        origen,
+        campaña,
+        ciudad,
+        fuente_detallada,
+        tags,
+        responsable,
+        estado,
+        fecha,
+        fecha_actualizacion
+      FROM leads
+      ${whereSQL}
+      ORDER BY fecha DESC
+    `;
+
+    console.log('Ejecutando query de exportación:', query);
+    console.log('Parámetros:', params);
+
+    const [rows] = await pool.query(query, params);
+
+    console.log(`Obtenidos ${rows.length} registros para exportación`);
+
+    return rows;
+
+  } catch (error) {
+    console.error('Error en getAllForExport:', error);
+    throw error;
+  }
+}
 };

@@ -97,7 +97,7 @@ const AuthForm = () => {
         if (response.data.token) {
           localStorage.setItem("token", response.data.token);
           console.log("Token guardado en localStorage");
-          navigate("/gestor");
+          navigate("/inicio");
 
         } else {
           console.warn("No se recibió token en la respuesta");

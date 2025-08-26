@@ -1,4 +1,3 @@
-// routes/ingest.js
 import express from 'express';
 import { authenticateApiKey, authenticateHMAC } from '../middlewares/auth.middlewares.js';
 import { ingestLead } from '../controllers/ingest.controller.js';

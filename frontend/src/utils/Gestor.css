@@ -6,11 +6,92 @@
   font-size: 16px;
 }
 
+.form-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.form-row input {
+  flex: 1;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.form-row input:focus {
+  outline: none;
+  border-color: #256e74;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.submit-btn {
+  background: #41bbc4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.lead-form {
+  max-width: 600px;
+  margin: 0 auto 10px auto;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.estado-nuevo {
+  background: #d4edda;
+  color: #155724;
+}
+
+.estado-contactado {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.estado-calificado {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.estado-oportunidad {
+  background: #cce5ff;
+  color: #004085;
+}
+
+.estado-cliente {
+  background: #d1e7dd;
+  color: #0f5132;
+}
+
+.estado-perdido {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.estado-sin-estado {
+  background: #e9ecef;
+  color: #6c757d;
+}
+
 .leads-table th,
 .leads-table td {
   padding: 10px 15px;
   text-align: center;
   border: 1px solid #ccc;
+}
+
+.table-row {
+  background-color: #ffffff;
+  color: #333;
 }
 
 .leads-table-body {
@@ -20,6 +101,7 @@
 
 /* --- RESPONSIVE --- */
 @media (max-width: 768px) {
+
   .leads-table,
   .leads-table thead,
   .leads-table tbody,
@@ -31,14 +113,15 @@
   }
 
   .leads-table thead {
-    display: none; /* ocultamos encabezados */
+    display: none;
+    /* ocultamos encabezados */
   }
 
   .leads-table tr {
     margin-bottom: 15px;
     background: #fff;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     padding: 10px;
   }
 
@@ -62,25 +145,26 @@
     content: attr(data-label);
   }
 }
-.bulk-action-btn{
+
+.bulk-action-btn {
   display: inline-block;
   padding: 8px 12pxs;
 }
 
-.bulk-actions-tex{
+.bulk-actions-tex {
   padding: 8px 12px;
 }
 
-.bulk-action-btn assign-btn{
+.bulk-action-btn assign-btn {
   padding: auto;
 }
 
-.bulk-action-btn delete-btn{
+.bulk-action-btn delete-btn {
   gap: 10px;
   background-color: #ff4d4f;
 }
 
-.bulk-buttons-container{
+.bulk-buttons-container {
   display: flex;
   gap: 10px;
   margin-top: 10px;

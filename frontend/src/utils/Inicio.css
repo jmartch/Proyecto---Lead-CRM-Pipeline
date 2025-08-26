@@ -1,0 +1,193 @@
+.lead-form {
+          max-width: 800px;
+          margin: 0 auto 40px auto;
+          padding: 20px;
+          background: #f8f9fa;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-row {
+          display: flex;
+          gap: 15px;
+          margin-bottom: 15px;
+        }
+
+        .form-row input {
+          flex: 1;
+          padding: 12px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          font-size: 14px;
+        }
+
+        .form-row input:focus {
+          outline: none;
+          border-color: #007bff;
+          box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        .submit-btn {
+          background: #007bff;
+          color: white;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 4px;
+          cursor: pointer;
+          font-weight: 500;
+          transition: background-color 0.2s;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+          background: #0056b3;
+        }
+
+        .submit-btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        .leads-table-container {
+          margin-top: 40px;
+        }
+
+        .table-title {
+          margin-bottom: 20px;
+          color: #333;
+          text-align: center;
+        }
+
+        .loading-container {
+          text-align: center;
+          padding: 40px;
+        }
+
+        .loading-spinner {
+          width: 40px;
+          height: 40px;
+          border: 4px solid #f3f3f3;
+          border-top: 4px solid #007bff;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin: 0 auto 20px;
+        }
+
+        .no-data {
+          text-align: center;
+          padding: 40px;
+          background: #f8f9fa;
+          border-radius: 8px;
+          color: #666;
+        }
+
+        .table-responsive {
+          overflow-x: auto;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          border-radius: 8px;
+        }
+
+        .leads-table {
+          width: 100%;
+          border-collapse: collapse;
+          background: white;
+        }
+
+        .leads-table th {
+          background: #f8f9fa;
+          padding: 12px 8px;
+          text-align: left;
+          font-weight: 600;
+          border-bottom: 2px solid #dee2e6;
+          white-space: nowrap;
+        }
+
+        .leads-table td {
+          padding: 12px 8px;
+          border-bottom: 1px solid #dee2e6;
+          vertical-align: middle;
+        }
+
+        .table-row:hover {
+          background-color: #f8f9fa;
+        }
+
+        .id-cell {
+          font-weight: 600;
+          color: #666;
+          width: 60px;
+        }
+
+        .nombre-cell {
+          font-weight: 500;
+          color: #333;
+          min-width: 120px;
+        }
+
+        .email-cell {
+          color: #0066cc;
+          min-width: 180px;
+        }
+
+        .telefono-cell, .origen-cell, .campaña-cell, .responsable-cell {
+          min-width: 100px;
+        }
+
+        .estado-badge {
+          padding: 4px 8px;
+          border-radius: 12px;
+          font-size: 12px;
+          font-weight: 500;
+          text-transform: capitalize;
+        }
+
+        .estado-nuevo { background: #e3f2fd; color: #1976d2; }
+        .estado-contactado { background: #f3e5f5; color: #7b1fa2; }
+        .estado-negociacion { background: #fff3e0; color: #f57c00; }
+        .estado-ganado { background: #e8f5e8; color: #388e3c; }
+        .estado-perdido { background: #ffebee; color: #d32f2f; }
+        .estado-default { background: #f5f5f5; color: #666; }
+
+        .fecha-cell {
+          color: #666;
+          font-size: 13px;
+          min-width: 100px;
+        }
+
+        .acciones-cell {
+          width: 80px;
+          text-align: center;
+        }
+
+        .delete-btn {
+          background: none;
+          border: none;
+          cursor: pointer;
+          font-size: 16px;
+          padding: 4px 8px;
+          border-radius: 4px;
+          transition: background-color 0.2s;
+        }
+
+        .delete-btn:hover {
+          background: #ffebee;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+          .form-row {
+            flex-direction: column;
+          }
+          
+          .leads-table {
+            font-size: 14px;
+          }
+          
+          .leads-table th,
+          .leads-table td {
+            padding: 8px 6px;
+          }
+        }

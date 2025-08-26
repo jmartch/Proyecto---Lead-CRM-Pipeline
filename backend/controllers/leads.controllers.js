@@ -405,6 +405,112 @@ export const LeadController = {
       res.status(500).json({ error: "Error interno del servidor: " + error.message });
     }
   },
+exportcsv: async (req, res) => {
+  try {
+    console.log('Iniciando exportación a CSV...');
+    
+    // Obtener filtros de la query string (opcionales)
+    const filters = {
+      estado: req.query.estado,
+      origen: req.query.origen,
+      fecha_desde: req.query.fecha_desde,
+      fecha_hasta: req.query.fecha_hasta,
+      responsable: req.query.responsable,
+      ciudad: req.query.ciudad,
+      fuente_detallada: req.query.fuente_detallada,
+      // No usar paginación para exportar todos los datos
+      limit: 999999,
+      page: 1
+    };
+
+    // Obtener todos los leads con los filtros aplicados
+    const result = await LeadModel.getAllaWithFilters(filters);
+    const leads = result.leads;
+
+    console.log(`Exportando ${leads.length} registros...`);
+
+    if (leads.length === 0) {
+      return res.status(404).json({ 
+        error: 'No se encontraron registros para exportar' 
+      });
+    }
+
+    // Definir las columnas que queremos exportar
+    const columns = [
+      { key: 'id', header: 'ID' },
+      { key: 'nombre', header: 'Nombre' },
+      { key: 'email', header: 'Email' },
+      { key: 'telefono', header: 'Teléfono' },
+      { key: 'origen', header: 'Origen' },
+      { key: 'campaña', header: 'Campaña' },
+      { key: 'ciudad', header: 'Ciudad' },
+      { key: 'fuente_detallada', header: 'Fuente Detallada' },
+      { key: 'responsable', header: 'Responsable' },
+      { key: 'estado', header: 'Estado' },
+      { key: 'tags', header: 'Tags' },
+      { key: 'fecha', header: 'Fecha Creación' },
+      { key: 'fecha_actualizacion', header: 'Fecha Actualización' }
+    ];
+
+    // Crear el contenido CSV
+    let csvContent = '';
+    
+    // Agregar encabezados
+    csvContent += columns.map(col => `"${col.header}"`).join(',') + '\n';
+    
+    // Agregar datos
+    leads.forEach(lead => {
+      const row = columns.map(col => {
+        let value = lead[col.key];
+        
+        // Manejar valores especiales
+        if (value === null || value === undefined) {
+          value = '';
+        } else if (col.key === 'tags' && value) {
+          // Si tags es JSON, convertir a string legible
+          try {
+            const tags = typeof value === 'string' ? JSON.parse(value) : value;
+            value = Array.isArray(tags) ? tags.join('; ') : value;
+          } catch (e) {
+            // Si no es JSON válido, mantener como está
+          }
+        } else if (col.key === 'fecha' || col.key === 'fecha_actualizacion') {
+          // Formatear fechas
+          if (value instanceof Date) {
+            value = value.toISOString().slice(0, 19).replace('T', ' ');
+          }
+        }
+        
+        // Escapar comillas y envolver en comillas
+        return `"${String(value).replace(/"/g, '""')}"`;
+      });
+      
+      csvContent += row.join(',') + '\n';
+    });
+
+    // Configurar headers para descarga
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/[T:]/g, '-');
+    const filename = `leads_export_${timestamp}.csv`;
+    
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', Buffer.byteLength(csvContent, 'utf8'));
+    
+    // Agregar BOM para compatibilidad con Excel
+    const csvWithBOM = '\uFEFF' + csvContent;
+    
+    console.log(`Exportación completada: ${filename}`);
+    
+    // Enviar el archivo
+    res.send(csvWithBOM);
+
+  } catch (error) {
+    console.error('Error en exportación CSV:', error);
+    res.status(500).json({ 
+      error: 'Error interno del servidor: ' + error.message 
+    });
+  }
+}
 
 
 };

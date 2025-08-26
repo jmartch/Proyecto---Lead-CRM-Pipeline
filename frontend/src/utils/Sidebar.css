@@ -1,0 +1,41 @@
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -250px; /* oculto por defecto */
+  width: 250px;
+  height: 100%;
+  background: #373a39;
+  color: white;
+  padding: 20px;
+  transition: left 0.3s ease;
+}
+
+.sidebar.open {
+  left: 0; /* cuando está abierto */
+}
+
+.sidebar .close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  gap: 10px;
+  margin-bottom: 40px;
+  
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 10px;
+}
+
+.sidebar li {
+  margin: 15px 0;
+}
+
+.sidebar a {
+  color: white;
+  text-decoration: none;
+}

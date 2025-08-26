@@ -5,6 +5,20 @@ import { upload } from '../middlewares/import.middleware.js';
 const router = Router();
 
 
+router.get('/options', LeadController.getFilterOptions);
+
+router.post('/importcsv', upload.single('file'), LeadController.importcsv);
+
+router.get('/exportcsv', LeadController.exportcsv);
+
+router.put('/:id/responsable', LeadController.assignResponsable);
+
+router.put('/:id/responsable/state', LeadController.updateState);
+
+router.delete('/:id', LeadController.delete);
+
+router.get('/:id', LeadController.getById);
+
 /**
  * @swagger
  * tags:
@@ -42,7 +56,6 @@ router.get('/', LeadController.getAll);
  *       404:
  *         description: Lead no encontrado
  */
-router.get('/:id', LeadController.getById);
 
 /**
  * @swagger
@@ -137,7 +150,7 @@ router.put('/:id', LeadController.update);
  *       404:
  *         description: Lead no encontrado
  */
-router.delete('/:id', LeadController.delete);
+
 
 /**
  * @swagger
@@ -149,15 +162,7 @@ router.delete('/:id', LeadController.delete);
  *       200:
  *         description: Opciones disponibles
  */
-router.get('/options', LeadController.getFilterOptions);
 
-router.post('/importcsv', upload.single('file'), LeadController.importcsv);
-
-//router.get('/export', LeadController.exportcsv);
-
-router.put('/:id/responsable', LeadController.assignResponsable);
-
-router.put('/:id/responsable/state', LeadController.updateState);
 //router.put('/api/leads/:id/responsable', LeadController.updateResponsable);
 
 export default router;

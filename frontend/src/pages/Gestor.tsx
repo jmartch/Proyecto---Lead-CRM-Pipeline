@@ -1,12 +1,9 @@
-import type { FormEvent } from 'react';
 import { useEffect, useState } from 'react';
 import '../global.css';
 import '../utils/Gestor.css';
-import Button from '../components/buttons/Button';
 import Importcsv from '../components/inputs/Importcsv';
 import Exportcsv from '../components/export/Exportcsv';
 import Table from '../components/Table/Table';
-import { useNavigate } from "react-router-dom";
 
 // Tipos de datos
 interface Lead {
@@ -29,19 +26,11 @@ interface Message {
 export default function Gestor() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [selectedLeads, setSelectedLeads] = useState<Lead[]>([]);
-  const [form, setForm] = useState<Lead>({
-    nombre: '',
-    email: '',
-    telefono: '',
-    origen: '',
-    campaña: ''
-  });
+
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<Message | null>(null);
-  const navigate = useNavigate();
 
-  // Validación de email básica
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 
   // Función para recargar leads
   const reloadLeads = async () => {
@@ -77,57 +66,6 @@ export default function Gestor() {
     setTimeout(() => setMessage(null), 5000);
   };
 
-  // Validar datos del formulario
-  const validateForm = () => {
-    if (!form.nombre.trim()) {
-      showMessage('error', 'El nombre es requerido');
-      return false;
-    }
-    if (!form.email.trim()) {
-      showMessage('error', 'El email es requerido');
-      return false;
-    }
-    if (!emailRegex.test(form.email)) {
-      showMessage('error', 'El formato del email no es válido');
-      return false;
-    }
-    if (form.telefono && !/^\+?[\d\s\-\(\)]+$/.test(form.telefono)) {
-      showMessage('error', 'El formato del teléfono no es válido');
-      return false;
-    }
-    return true;
-  };
-
-  async function submit(e: FormEvent) {
-    e.preventDefault();
-    if (!validateForm()) return;
-
-    setIsLoading(true);
-    setMessage(null);
-
-    try {
-      const res = await fetch(import.meta.env.VITE_API_URL + '/api/leads', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
-      });
-
-      const data = await res.json();
-
-      if (data.status === 'ok' && data.lead) {
-        setLeads(prev => [data.lead, ...prev]);
-        setForm({ nombre: '', email: '', telefono: '', origen: '', campaña: '' });
-        showMessage('success', '¡Lead agregado exitosamente!');
-      } else {
-        showMessage('error', data.message || 'Error al agregar lead');
-      }
-    } catch (error) {
-      console.error("Error enviando lead:", error);
-      showMessage('error', 'Error de conexión con el servidor');
-    } finally {
-      setIsLoading(false);
-    }
-  }
   const handleSelectionChange = (selectedLeadsData: Lead[]) => {
     setSelectedLeads(selectedLeadsData);
   };
@@ -321,48 +259,6 @@ export default function Gestor() {
   return (
     <div className="Gestor">
       <h1 className="titulo-central">Gestor de Leads</h1>
-
-      {/* Formulario */}
-      <form onSubmit={submit}>
-        <input
-          required
-          value={form.nombre}
-          onChange={e => setForm({ ...form, nombre: e.target.value })}
-          placeholder="Nombre *"
-          disabled={isLoading}
-        />
-        <input
-          required
-          type="email"
-          value={form.email}
-          onChange={e => setForm({ ...form, email: e.target.value })}
-          placeholder="Email *"
-          disabled={isLoading}
-        />
-        <input
-          value={form.telefono}
-          onChange={e => setForm({ ...form, telefono: e.target.value })}
-          placeholder="Teléfono"
-          disabled={isLoading}
-          pattern="[\+]?[\d\s\-\(\)]+"
-        />
-        <input
-          value={form.origen}
-          onChange={e => setForm({ ...form, origen: e.target.value })}
-          placeholder="Origen"
-          disabled={isLoading}
-        />
-        <input
-          value={form.campaña}
-          onChange={e => setForm({ ...form, campaña: e.target.value })}
-          placeholder="Campaña"
-          disabled={isLoading}
-        />
-        <button type="submit" disabled={isLoading}>
-          {isLoading ? 'Enviando...' : 'Agregar Lead'}
-        </button>
-      </form>
-
       {/* Mensajes */}
       {message && (
         <div className={`text-center ${message.type === 'success' ? 'mensaje-exito' : 'mensaje-error'}`}>
@@ -515,12 +411,6 @@ export default function Gestor() {
         </div>
       )}
 
-      {/* Botón cerrar sesión */}
-      <div style={{ position: "absolute", bottom: "20px", left: "90px" }}>
-        <Button onClick={() => navigate('/')} disabled={isLoading}>
-          Cerrar Sesión
-        </Button>
-      </div>
       {/* Boton importación CSV */}
       <div style={{ display: 'flex', justifyContent: 'center', padding: '20px', gap: '20px', marginTop: '20px' }}>
         <Importcsv
