@@ -24,7 +24,7 @@ export async function registerUser(req, res) {
             nombre,
             email,
             password: hashedPassword,
-            role: 'ejecutivo',
+            rol: 'ejecutivo',
         });
         res.status(201).json({ message: 'Usuario registrado correctamente' });
     } catch (error) {
@@ -110,7 +110,7 @@ export const authController = {
     updateUser: async (req, res) => {
         try {
             const { id } = req.params;
-            const { nombre, email, password } = req.body; // 🚫 ignoramos role aquí
+            const { nombre, email, password } = req.body; //  ignoramos role aquí
 
             let hashedPassword = null;
             if (password) {
@@ -151,10 +151,10 @@ export const authController = {
     changeUserRole: async (req, res) => {
         try {
             const { id } = req.params;
-            const { role } = req.body;
+            const { rol } = req.body;
 
             // 🚨 seguridad: solo admin accede aquí (verifyAdmin en la ruta)
-            const updated = await authModel.update(id, { role });
+            const updated = await authModel.update(id, { rol });
 
             if (!updated) {
                 return res.status(404).json({ message: 'Usuario no encontrado' });

@@ -58,7 +58,7 @@ router.post('/login', loginUser);
  *         in: query
  *         schema: { type: string, enum: [ASC, DESC] }
  */
-router.get('/', verifyToken, authController.getAllUsers);
+router.get('/',verifyToken, authController.getAllUsers);
 
 /**
  * @swagger

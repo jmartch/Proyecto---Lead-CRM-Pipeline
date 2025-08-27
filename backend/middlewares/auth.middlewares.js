@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
-import { pool } from '../config/db.js';
+import { poolusers } from '../config/db.js';
 import crypto from 'crypto';
-// Middleware para verificar token
+
+
 export const verifyToken = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
@@ -16,8 +17,7 @@ export const verifyToken = async (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
         // Opcional: Verificar que el usuario aún existe en la base de datos
-        const [rows] = await pool.query('SELECT id, email, nombre, role FROM users WHERE id = ?', [decoded.id]);
-        
+        const [rows] = await poolusers.query('SELECT id, email, nombre, rol FROM usuarios WHERE id = ?', [decoded.id]);
         if (rows.length === 0) {
             return res.status(401).json({ message: 'Usuario no encontrado' });
         }
@@ -46,7 +46,7 @@ export const verifyAdmin = async (req, res, next) => {
         // Primero verifica el token
         await verifyToken(req, res, () => {
             // Luego verifica si es admin
-            if (req.user.role !== 'admin') {
+            if (req.user.rol !== 'admin') {
                 return res.status(403).json({ message: 'Acceso denegado. Se requieren permisos de administrador.' });
             }
             next();

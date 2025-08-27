@@ -31,8 +31,9 @@ const AuthForm = () => {
     },
   });
 
+
   const onSubmit: SubmitHandler<FieldValues> = async (data) => {
-    console.log("🚀 Iniciando submit:", { variant, data: { ...data, password: "[OCULTO]" } });
+    console.log(" Iniciando submit:", { variant, data: { ...data, password: "[OCULTO]" } });
 
     setIsLoading(true);
 
@@ -42,7 +43,7 @@ const AuthForm = () => {
       console.log("🌐 API URL:", apiUrl);
 
       if (!apiUrl) {
-        console.error("❌ VITE_API_URL no está definida");
+        console.error(" VITE_API_URL no está definida");
         toast.error("Error de configuración: URL de API no encontrada");
         return;
       }
@@ -57,7 +58,7 @@ const AuthForm = () => {
           email: data.email,
           password: data.password
         };
-        console.log("📦 Datos de registro:", { ...registerData, password: "[OCULTO]" });
+        console.log(" Datos de registro:", { ...registerData, password: "[OCULTO]" });
 
         const response = await axios.post(registerUrl, registerData, {
           headers: { 'Content-Type': 'application/json' }
@@ -86,6 +87,7 @@ const AuthForm = () => {
             'Content-Type': 'application/json'
           }
         });
+          
 
         console.log("Login exitoso:", {
           ...response.data,
