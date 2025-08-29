@@ -6,7 +6,7 @@ dotenv.config();
 /**
  * @swagger
  * components:
- *   schemas :
+ *   schemas:
  *     Lead:
  *       type: object
  *       properties:
@@ -48,7 +48,7 @@ dotenv.config();
  *           description: Fuente más detallada del lead.
  *         tags:
  *           type: object
- *           description: Etiquetas asociadas al lead (JSON).
+ *           description: Etiquetas asociadas al lead (almacenadas como JSON).
  *         fecha_actualizacion:
  *           type: string
  *           format: date-time
@@ -88,10 +88,10 @@ dotenv.config();
  *           description: ID único del registro en historial.
  *         lead_id:
  *           type: integer
- *           description: ID del lead relacionado.
+ *           description: ID del lead relacionado (FK a lead_crm.leads).
  *         usuario_id:
  *           type: integer
- *           description: ID del usuario que creó la interacción.
+ *           description: ID del usuario que creó la interacción (FK a usuarios_crm.usuarios).
  *         tipo:
  *           type: string
  *           enum: [nota, llamada, email, estado, asignacion]
@@ -104,7 +104,6 @@ dotenv.config();
  *           format: date-time
  *           description: Fecha en que se registró el historial.
  */
-
 
 // Pools de conexión
 //POOL LEADS

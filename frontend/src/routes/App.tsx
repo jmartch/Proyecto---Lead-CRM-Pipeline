@@ -1,4 +1,3 @@
-// src/App.tsx
 import { Routes, Route, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Sidebar from "../components/Menu/Sidebar";
@@ -8,7 +7,7 @@ import Inicio from "../pages/Inicio";
 import Usuarios from "../pages/Usuarios";
 import Dashboard from "../pages/Dashboard";
 import { BsLayoutSidebar } from 'react-icons/bs';
-
+import '../global.css'
 
 export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -28,26 +27,46 @@ export default function App() {
   const hideSidebar = location.pathname === "/";
 
   return (
-    <div>
-      {!hideSidebar && (
-        <>
-          <button onClick={() => setIsSidebarOpen(true)}>< BsLayoutSidebar size={20} /></button>
-          <Sidebar
-            isOpen={isSidebarOpen}
-            onClose={() => setIsSidebarOpen(false)}
-            theme={theme}
-            toggleTheme={toggleTheme}
-          />
-        </>
-      )}
+    <div style={{ display: 'flex', minHeight: '100vh' }}>
+{!hideSidebar && (
+  <>
+    {/* Botón para abrir sidebar (solo cuando está cerrado) */}
+    {!isSidebarOpen && (
+      <button
+        onClick={() => setIsSidebarOpen(true)}
+        className={`btn-close-app ${theme}`}
+      >
+        <BsLayoutSidebar size={20} />
+      </button>
+    )}
 
-      <main>
+    {/* Sidebar */}
+    <Sidebar
+      isOpen={isSidebarOpen}
+      onClose={() => setIsSidebarOpen(false)}
+      theme={theme}
+      toggleTheme={toggleTheme}
+    />
+  </>
+)}
+
+
+
+      {/* Contenido principal que se ajusta cuando el sidebar está abierto */}
+      <main
+        style={{
+          flex: 1,
+          marginLeft: !hideSidebar && isSidebarOpen ? '250px' : '0',
+          transition: 'margin-left 0.3s ease',
+          paddingTop: !hideSidebar ? '60px' : '0',
+          minHeight: '100vh'
+        }}
+      >
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/gestor" element={<Gestor />} />
           <Route path="/usuarios" element={<Usuarios />} />
-
-          {/* <Route path="/dashboard" element={<Dashboard />} /> */}
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route
             path="/inicio"
             element={

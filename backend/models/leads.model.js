@@ -330,6 +330,56 @@ export const LeadModel = {
       throw error;
     }
   },
+  async LeadsByCampaign(from, to) {
+    try {
+      const [result] = await pool.query(`
+        SELECT campaña AS campaign, COUNT(*) AS leads
+        FROM leads
+        WHERE fecha BETWEEN ? AND ?
+        GROUP BY campaña
+        ORDER BY leads DESC
+      `, [from, to]);
+
+      return result;
+    } catch (error) {
+      console.error('Error en LeadModel.LeadsByCampaign:', error);
+      throw error;
+    }
+  },
+  async FunnelData(from, to) {
+    try {
+      const [result] = await pool.query(`
+      SELECT estado AS stage, COUNT(*) AS value
+      FROM leads
+      WHERE fecha BETWEEN ? AND ?
+      GROUP BY estado
+    `, [from, to]);
+
+      return result;
+    } catch (error) {
+      console.error('Error en LeadModel.FunnelData:', error);
+      throw error;
+    }
+  },
+  async AvgResponseTime(from, to) {
+    try {
+      const [result] = await pool.query(`
+      SELECT 
+        DATE(fecha) AS date,
+        AVG(TIMESTAMPDIFF(HOUR, fecha, fecha_respuesta)) AS avgResponseHours
+      FROM leads
+      WHERE fecha BETWEEN ? AND ?
+      AND fecha_respuesta IS NOT NULL
+      GROUP BY DATE(fecha)
+      ORDER BY DATE(fecha)
+    `, [from, to]);
+
+      res.json(result);
+    } catch (error) {
+      console.error('Error en LeadModel.AvgResponseTime:', error);
+      throw error;
+    }
+  },
   async responsable(id, responsable) {
     try {
       const [result] = await pool.query(
@@ -379,54 +429,54 @@ export const LeadModel = {
     }
   },
   async getAllForExport(filters = {}) {
-  try {
-    const {
-      estado,
-      origen,
-      fecha_desde,
-      fecha_hasta,
-      responsable,
-      ciudad,
-      fuente_detallada
-    } = filters;
+    try {
+      const {
+        estado,
+        origen,
+        fecha_desde,
+        fecha_hasta,
+        responsable,
+        ciudad,
+        fuente_detallada
+      } = filters;
 
-    // Construir filtros WHERE
-    let whereClauses = [];
-    let params = [];
-    
-    if (estado) {
-      whereClauses.push('estado = ?');
-      params.push(estado);
-    }
-    if (origen) {
-      whereClauses.push('origen LIKE ?');
-      params.push(`%${origen}%`);
-    }
-    if (fecha_desde) {
-      whereClauses.push('fecha >= ?');
-      params.push(fecha_desde);
-    }
-    if (fecha_hasta) {
-      whereClauses.push('fecha <= ?');
-      params.push(fecha_hasta + ' 23:59:59');
-    }
-    if (responsable) {
-      whereClauses.push('responsable = ?');
-      params.push(responsable);
-    }
-    if (ciudad) {
-      whereClauses.push('ciudad LIKE ?');
-      params.push(`%${ciudad}%`);
-    }
-    if (fuente_detallada) {
-      whereClauses.push('fuente_detallada LIKE ?');
-      params.push(`%${fuente_detallada}%`);
-    }
+      // Construir filtros WHERE
+      let whereClauses = [];
+      let params = [];
 
-    const whereSQL = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
+      if (estado) {
+        whereClauses.push('estado = ?');
+        params.push(estado);
+      }
+      if (origen) {
+        whereClauses.push('origen LIKE ?');
+        params.push(`%${origen}%`);
+      }
+      if (fecha_desde) {
+        whereClauses.push('fecha >= ?');
+        params.push(fecha_desde);
+      }
+      if (fecha_hasta) {
+        whereClauses.push('fecha <= ?');
+        params.push(fecha_hasta + ' 23:59:59');
+      }
+      if (responsable) {
+        whereClauses.push('responsable = ?');
+        params.push(responsable);
+      }
+      if (ciudad) {
+        whereClauses.push('ciudad LIKE ?');
+        params.push(`%${ciudad}%`);
+      }
+      if (fuente_detallada) {
+        whereClauses.push('fuente_detallada LIKE ?');
+        params.push(`%${fuente_detallada}%`);
+      }
 
-    // Query para obtener TODOS los registros (sin LIMIT)
-    const query = `
+      const whereSQL = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
+
+      // Query para obtener TODOS los registros (sin LIMIT)
+      const query = `
       SELECT 
         id,
         nombre,
@@ -446,18 +496,18 @@ export const LeadModel = {
       ORDER BY fecha DESC
     `;
 
-    console.log('Ejecutando query de exportación:', query);
-    console.log('Parámetros:', params);
+      console.log('Ejecutando query de exportación:', query);
+      console.log('Parámetros:', params);
 
-    const [rows] = await pool.query(query, params);
+      const [rows] = await pool.query(query, params);
 
-    console.log(`Obtenidos ${rows.length} registros para exportación`);
+      console.log(`Obtenidos ${rows.length} registros para exportación`);
 
-    return rows;
+      return rows;
 
-  } catch (error) {
-    console.error('Error en getAllForExport:', error);
-    throw error;
+    } catch (error) {
+      console.error('Error en getAllForExport:', error);
+      throw error;
+    }
   }
-}
 };

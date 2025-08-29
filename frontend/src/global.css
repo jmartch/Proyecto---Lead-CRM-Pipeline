@@ -11,15 +11,6 @@ body {
   color: white;
 }
 
-html {
-  --s: 100px;
-  /* control the size*/
-  --c1: #4ecdc4;
-  --c2: #556270;
-
-  background:
-    linear-gradient(atan(-.5), var(--c1) 33%, var(--c2) 33.5% 66.5%, var(--c1) 67%) 0/var(--s) var(--s);
-}
 
 form {
   display: flex;
@@ -59,3 +50,320 @@ button:hover {
   margin-top: 20px;
 }
 
+/* global-theme.css - Agrega esto a tu CSS principal */
+
+:root {
+  --s: 100px;
+  --primary-color: #28b8ae;
+  --secondary-color: #000000;
+}
+
+/* Modo claro */
+body.light {
+  --c1: #28b8ae;
+  --c2: #ffffff;
+
+  background:
+    linear-gradient(atan(-.5), var(--c1) 33%, var(--c2) 33.5% 66.5%, var(--c1) 67%) 0/var(--s) var(--s);
+  color: #1f2937;
+  transition: all 0.3s ease;
+}
+
+
+
+/* Modo oscuro */
+body.dark {
+  --c1: #28b8ae;
+  --c2: #000000;
+
+  background:
+    linear-gradient(atan(-.5), var(--c1) 33%, var(--c2) 33.5% 66.5%, var(--c1) 67%) 0/var(--s) var(--s);
+  color: #f9fafb;
+  transition: all 0.3s ease;
+}
+
+/* Contenido principal */
+
+/*boton cerrar app*/
+.light .btn-close-app {
+  position: fixed;
+  top: 20px;
+  left: -4px;
+  z-index: 1000;
+  padding: 10px;
+  background-color: var(--c1);
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  display: block;
+  transition: all 0.3s ease;
+}
+
+.dark .btn-close-app {
+  position: fixed;
+  top: 20px;
+  left: -4px;
+  z-index: 1000;
+  padding: 10px;
+  background-color: var(--c2);
+  color: #f9fafb;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
+  display: block;
+  transition: all 0.3s ease;
+}
+
+/* Cards y contenedores */
+.light .card,
+.light .container,
+.light .content-box {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(40, 184, 174, 0.2);
+  color: #1f2937;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(40, 184, 174, 0.1);
+}
+
+.dark .card,
+.dark .container,
+.dark .content-box {
+  background-color: rgba(31, 41, 55, 0.9);
+  border: 1px solid rgba(40, 184, 174, 0.3);
+  color: #f9fafb;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Botones primarios */
+.light .btn-primary,
+.light button.primary {
+  background: linear-gradient(135deg, #28b8ae, #22a89a);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(40, 184, 174, 0.3);
+}
+
+.light .btn-primary:hover,
+.light button.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(40, 184, 174, 0.4);
+}
+
+.dark .btn-primary,
+.dark button.primary {
+  background: linear-gradient(135deg, #28b8ae, #22a89a);
+  color: white;
+  border: 1px solid #28b8ae;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(40, 184, 174, 0.2);
+}
+
+.dark .btn-primary:hover,
+.dark button.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(40, 184, 174, 0.4);
+  border-color: #33c9bc;
+}
+
+/* Botones secundarios */
+.light .btn-secondary,
+.light button.secondary {
+  background-color: transparent;
+  color: #28b8ae;
+  border: 2px solid #28b8ae;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.light .btn-secondary:hover,
+.light button.secondary:hover {
+  background-color: #28b8ae;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.dark .btn-secondary,
+.dark button.secondary {
+  background-color: transparent;
+  color: #28b8ae;
+  border: 2px solid #28b8ae;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dark .btn-secondary:hover,
+.dark button.secondary:hover {
+  background-color: #28b8ae;
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* Inputs y formularios */
+.light input,
+.light select,
+.light textarea {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(40, 184, 174, 0.3);
+  color: #1f2937;
+  border-radius: 8px;
+  padding: 10px 15px;
+  transition: all 0.2s ease;
+}
+
+.light input:focus,
+.light select:focus,
+.light textarea:focus {
+  border-color: #28b8ae;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(40, 184, 174, 0.1);
+}
+
+.dark input,
+.dark select,
+.dark textarea {
+  border: 2px solid rgba(40, 184, 174, 0.3);
+  color: #000000;
+  border-radius: 8px;
+  padding: 10px 15px;
+  transition: all 0.2s ease;
+}
+
+.dark input:focus,
+.dark select:focus,
+.dark textarea:focus {
+  border-color: #28b8ae;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(40, 184, 174, 0.2);
+}
+
+/* Tablas */
+.light table {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(40, 184, 174, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.light th {
+  background: linear-gradient(135deg, #28b8ae, #22a89a);
+  color: white;
+  font-weight: 600;
+  padding: 15px;
+}
+
+.light td {
+  padding: 12px 15px;
+  border-bottom: 1px solid rgba(40, 184, 174, 0.1);
+  color: #1f2937;
+}
+
+.light tr:hover {
+  background-color: rgba(40, 184, 174, 0.05);
+}
+
+.dark table {
+  background-color: rgba(231, 231, 231, 0.9);
+  border: 1px solid rgba(40, 184, 174, 0.3);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.dark th {
+  background: linear-gradient(135deg, #d3d5da, #111827);
+  color: #28b8ae;
+  font-weight: 600;
+  padding: 15px;
+  border-bottom: 2px solid #28b8ae;
+}
+
+.dark td {
+  padding: 12px 15px;
+  border-bottom: 1px solid rgba(40, 184, 174, 0.1);
+  color: #000000;
+}
+
+.dark tr:hover {
+  background-color: rgba(40, 184, 174, 0.1);
+}
+
+/* Scrollbar personalizado */
+.light ::-webkit-scrollbar {
+  width: 8px;
+}
+
+.light ::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.light ::-webkit-scrollbar-thumb {
+  background: #28b8ae;
+  border-radius: 4px;
+}
+
+.light ::-webkit-scrollbar-thumb:hover {
+  background: #22a89a;
+}
+
+.dark ::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #28b8ae;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #33c9bc;
+}
+
+/* Animaciones y efectos */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Efectos de vidrio (glassmorphism) */
+.glass-effect {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass-effect {
+  border-color: rgba(40, 184, 174, 0.2);
+}
