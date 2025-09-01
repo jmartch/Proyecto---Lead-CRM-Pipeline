@@ -294,17 +294,43 @@ export const LeadController = {
   },
   assignResponsable: async (req, res) => {
     try {
-      const { LeadId, responsable } = await LeadModel.responsable(req.params.id, req.body.responsable);
+      const { id } = req.params;              // id del lead
+      const { responsable } = req.body;       // string con el nombre
 
+      if (!responsable || !responsable.trim()) {
+        return res.status(400).json({ status: 'error', message: 'Responsable requerido' });
+      }
+
+      const updated = await LeadModel.responsable(id, responsable);
+
+      if (updated) {
+        return res.json({ status: 'ok', message: 'Responsable asignado correctamente' });
+      } else {
+        return res.status(404).json({ status: 'error', message: 'Lead no encontrado' });
+      }
     } catch (error) {
-
+      console.error('Error en assignResponsable:', error);
+      return res.status(500).json({ status: 'error', message: 'Error en el servidor' });
     }
-  },
-  updateState: async (res, req) => {
+  }
+  ,
+  updateState: async (req, res) => {
     try {
+      const { id } = req.params;
+      const { estado } = req.body;
 
+      const updated = await LeadModel.state(id, estado);
+
+      if (!updated) {
+        return res.status(404).json({ status: 'error', message: 'Lead no encontrado o sin cambios' });
+      }
+
+      res.json({ status: 'ok', message: `Estado actualizado a ${estado}` });
     } catch (error) {
-      console.error('Error actualizando estado del lead:', error);
+      console.error('Error en updateState:', error);
+      if (error.message === 'INVALID_STATE') {
+        return res.status(400).json({ status: 'error', message: 'Estado no válido' });
+      }
       res.status(500).json({ status: 'error', message: 'Error actualizando estado del lead' });
     }
   },
@@ -558,6 +584,6 @@ export const LeadController = {
       console.error('Error en LeadController.getAvgResponseTime:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
-  }
-
+  },
+  
 };

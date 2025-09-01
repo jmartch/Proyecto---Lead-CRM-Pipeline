@@ -41,6 +41,11 @@ export default function Inicio({ onLeadAdded, onMessage }: LeadFormProps) {
   // Validación de email básica
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+  // Función para verificar si el email ya existe
+  const emailExists = (email: string): boolean => {
+    return leads.some(lead => lead.email.toLowerCase() === email.toLowerCase());
+  };
+
   // Función para cargar leads desde el servidor
   const loadLeads = async () => {
     setIsLoadingTable(true);
@@ -50,7 +55,7 @@ export default function Inicio({ onLeadAdded, onMessage }: LeadFormProps) {
         headers: { 'Content-Type': 'application/json' }
       });
       const data = await response.json();
-      
+
       if (Array.isArray(data)) {
         setLeads(data);
       } else if (data && Array.isArray(data.leads)) {
@@ -85,6 +90,13 @@ export default function Inicio({ onLeadAdded, onMessage }: LeadFormProps) {
       onMessage('error', 'El formato del email no es válido');
       return false;
     }
+    
+    // Verificar si el email ya existe
+    if (emailExists(form.email)) {
+      onMessage('error', 'Ya existe un lead con este email. No se permiten emails duplicados.');
+      return false;
+    }
+    
     if (form.telefono && !/^\+?[\d\s\-\(\)]+$/.test(form.telefono)) {
       onMessage('error', 'El formato del teléfono no es válido');
       return false;
@@ -114,7 +126,12 @@ export default function Inicio({ onLeadAdded, onMessage }: LeadFormProps) {
         setForm({ nombre: '', email: '', telefono: '', origen: '', campaña: '' });
         onMessage('success', '¡Lead agregado exitosamente!');
       } else {
-        onMessage('error', data.message || 'Error al agregar lead');
+        // Si el servidor devuelve error por email duplicado
+        if (data.message && data.message.includes('email')) {
+          onMessage('error', 'Este email ya está registrado en el sistema');
+        } else {
+          onMessage('error', data.message || 'Error al agregar lead');
+        }
       }
     } catch (error) {
       console.error("Error enviando lead:", error);
@@ -159,10 +176,18 @@ export default function Inicio({ onLeadAdded, onMessage }: LeadFormProps) {
     }
   };
 
+  // Función para resaltar leads duplicados (opcional, para visualización)
+  const getDuplicateEmailClass = (email: string, currentId?: number) => {
+    const duplicates = leads.filter(lead => 
+      lead.email.toLowerCase() === email.toLowerCase() && lead.id !== currentId
+    );
+    return duplicates.length > 0 ? 'email-duplicate' : '';
+  };
+
   return (
     <div className="lead-form-container">
       <h1 className="titulo-central">Agregar Nuevo Lead</h1>
-      
+
       {/* Formulario */}
       <form onSubmit={submit} className="lead-form">
         <div className="form-row">
@@ -180,6 +205,7 @@ export default function Inicio({ onLeadAdded, onMessage }: LeadFormProps) {
             onChange={e => setForm({ ...form, email: e.target.value })}
             placeholder="Email *"
             disabled={isLoading}
+            className={emailExists(form.email) ? 'input-error' : ''}
           />
         </div>
         <div className="form-row">
@@ -210,10 +236,17 @@ export default function Inicio({ onLeadAdded, onMessage }: LeadFormProps) {
         </div>
       </form>
 
+      {/* Mensaje de advertencia si hay email duplicado */}
+      {form.email && emailExists(form.email) && (
+        <div className="warning-message">
+          ⚠️ Este email ya está registrado en el sistema
+        </div>
+      )}
+
       {/* Tabla de leads */}
       <div className="leads-table-container">
         <h2 className="table-title">Leads Registrados ({leads.length})</h2>
-        
+
         {isLoadingTable ? (
           <div className="loading-container">
             <div className="loading-spinner"></div>
@@ -243,7 +276,9 @@ export default function Inicio({ onLeadAdded, onMessage }: LeadFormProps) {
                 {leads.map((lead) => (
                   <tr key={lead.id} className="table-row">
                     <td className="nombre-cell">{lead.nombre}</td>
-                    <td className="email-cell">{lead.email}</td>
+                    <td className={`email-cell ${getDuplicateEmailClass(lead.email, lead.id)}`}>
+                      {lead.email}
+                    </td>
                     <td className="telefono-cell">{lead.telefono || '-'}</td>
                     <td className="origen-cell">{lead.origen || '-'}</td>
                     <td className="campaña-cell">{lead.campaña || '-'}</td>
@@ -254,7 +289,7 @@ export default function Inicio({ onLeadAdded, onMessage }: LeadFormProps) {
                     </td>
                     <td className="responsable-cell">{lead.responsable || '-'}</td>
                     <td className="acciones-cell">
-                      <button 
+                      <button
                         onClick={() => lead.id && handleDelete(lead.id)}
                         className="delete-btn"
                         title="Eliminar lead"

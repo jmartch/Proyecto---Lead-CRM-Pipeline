@@ -57,6 +57,112 @@ const router = Router();
  */
 router.get('/', LeadController.getAll);
 
+// ==========================================
+// RUTAS ESPECÍFICAS DEBEN IR ANTES QUE /:id
+// ==========================================
+
+/**
+ * @swagger
+ * /api/leads/options:
+ *   get:
+ *     summary: Obtener opciones únicas para filtros (estados, ciudades, responsables, etc.)
+ *     tags: [Leads]
+ *     responses:
+ *       200: { description: Opciones disponibles }
+ */
+router.get('/options', LeadController.getFilterOptions);
+
+/**
+ * @swagger
+ * /api/leads/exportcsv:
+ *   get:
+ *     summary: Exportar leads a CSV
+ *     tags: [Leads]
+ *     responses:
+ *       200: { description: Archivo CSV generado }
+ */
+router.get('/exportcsv', LeadController.exportcsv);
+
+/**
+ * @swagger
+ * /api/leads/leads-by-compaign:
+ *   get:
+ *     summary: Obtener cantidad de leads agrupados por campaña
+ *     tags: [Leads]
+ *     parameters:
+ *       - name: from
+ *         in: query
+ *         schema: { type: string, format: date }
+ *       - name: to
+ *         in: query
+ *         schema: { type: string, format: date }
+ *     responses:
+ *       200: { description: Estadísticas por campaña }
+ */
+router.get('/leads-by-compaign', LeadController.getLeadsByCampaign);
+
+/**
+ * @swagger
+ * /api/leads/funnel:
+ *   get:
+ *     summary: Obtener datos del embudo de ventas (leads por estado)
+ *     tags: [Leads]
+ *     parameters:
+ *       - name: from
+ *         in: query
+ *         schema: { type: string, format: date }
+ *       - name: to
+ *         in: query
+ *         schema: { type: string, format: date }
+ *     responses:
+ *       200: { description: Datos del funnel }
+ */
+router.get('/funnel', LeadController.getFunnelData);
+
+/**
+ * @swagger
+ * /api/leads/avg-response-time:
+ *   get:
+ *     summary: Obtener el tiempo promedio de respuesta de leads
+ *     tags: [Leads]
+ *     parameters:
+ *       - name: from
+ *         in: query
+ *         schema: { type: string, format: date }
+ *       - name: to
+ *         in: query
+ *         schema: { type: string, format: date }
+ *     responses:
+ *       200: { description: Promedio de horas de respuesta }
+ */
+router.get('/avg-response-time', LeadController.getAvgResponseTime);
+
+/**
+ * @swagger
+ * /api/leads/importcsv:
+ *   post:
+ *     summary: Importar leads desde un archivo CSV
+ *     tags: [Leads]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200: { description: Leads importados exitosamente }
+ *       400: { description: Archivo inválido }
+ */
+router.post('/importcsv', upload.single('file'), LeadController.importcsv);
+
+// ==========================================
+// RUTAS DINÁMICAS CON :id VAN AL FINAL
+// ==========================================
+
 /**
  * @swagger
  * /api/leads/{id}:
@@ -212,100 +318,30 @@ router.put('/:id/responsable/state', LeadController.updateState);
 
 /**
  * @swagger
- * /api/leads/options:
- *   get:
- *     summary: Obtener opciones únicas para filtros (estados, ciudades, responsables, etc.)
+ * /api/leads/{id}/estado:
+ *   put:
+ *     summary: Actualizar estado de un lead
  *     tags: [Leads]
- *     responses:
- *       200: { description: Opciones disponibles }
- */
-router.get('/options', LeadController.getFilterOptions);
-
-/**
- * @swagger
- * /api/leads/importcsv:
- *   post:
- *     summary: Importar leads desde un archivo CSV
- *     tags: [Leads]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema: { type: integer }
  *     requestBody:
  *       required: true
  *       content:
- *         multipart/form-data:
+ *         application/json:
  *           schema:
  *             type: object
  *             properties:
- *               file:
+ *               estado:
  *                 type: string
- *                 format: binary
+ *                 enum: [nuevo, contactado, en_negociacion, cerrado_ganado, cerrado_perdido]
  *     responses:
- *       200: { description: Leads importados exitosamente }
- *       400: { description: Archivo inválido }
+ *       200: { description: Estado actualizado }
+ *       400: { description: Estado inválido }
+ *       404: { description: Lead no encontrado }
  */
-router.post('/importcsv', upload.single('file'), LeadController.importcsv);
-
-/**
- * @swagger
- * /api/leads/exportcsv:
- *   get:
- *     summary: Exportar leads a CSV
- *     tags: [Leads]
- *     responses:
- *       200: { description: Archivo CSV generado }
- */
-router.get('/exportcsv', LeadController.exportcsv);
-
-/**
- * @swagger
- * /api/leads/leads-by-compaign:
- *   get:
- *     summary: Obtener cantidad de leads agrupados por campaña
- *     tags: [Leads]
- *     parameters:
- *       - name: from
- *         in: query
- *         schema: { type: string, format: date }
- *       - name: to
- *         in: query
- *         schema: { type: string, format: date }
- *     responses:
- *       200: { description: Estadísticas por campaña }
- */
-router.get('/leads-by-compaign', LeadController.getLeadsByCampaign);
-
-/**
- * @swagger
- * /api/leads/funnel:
- *   get:
- *     summary: Obtener datos del embudo de ventas (leads por estado)
- *     tags: [Leads]
- *     parameters:
- *       - name: from
- *         in: query
- *         schema: { type: string, format: date }
- *       - name: to
- *         in: query
- *         schema: { type: string, format: date }
- *     responses:
- *       200: { description: Datos del funnel }
- */
-router.get('/funnel', LeadController.getFunnelData);
-
-/**
- * @swagger
- * /api/leads/avg-response-time:
- *   get:
- *     summary: Obtener el tiempo promedio de respuesta de leads
- *     tags: [Leads]
- *     parameters:
- *       - name: from
- *         in: query
- *         schema: { type: string, format: date }
- *       - name: to
- *         in: query
- *         schema: { type: string, format: date }
- *     responses:
- *       200: { description: Promedio de horas de respuesta }
- */
-router.get('/avg-response-time', LeadController.getAvgResponseTime);
+router.put('/:id/estado', LeadController.updateState);
 
 export default router;

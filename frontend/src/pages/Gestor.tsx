@@ -131,54 +131,50 @@ export default function Gestor() {
   };
 
   // Función para asignar responsable en lote
-  const handleBulkAssign = async () => {
-    if (!assignResponsable.trim()) {
-      showMessage('error', 'Ingresa el nombre del responsable');
-      return;
+  // Asignar responsable en lote (usa assignResponsable y el endpoint correcto)
+const handleBulkAssign = async () => {
+  const nombre = assignResponsable.trim();
+  if (!nombre) {
+    showMessage('error', 'Ingresa el nombre del responsable');
+    return;
+  }
+  if (nombre.length < 2 || nombre.length > 100) {
+    showMessage('error', 'El responsable debe tener entre 2 y 100 caracteres');
+    return;
+  }
+
+  setIsProcessing(true);
+  let successCount = 0, errorCount = 0;
+
+  try {
+    for (const lead of selectedLeads) {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead.id}/responsable`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ responsable: nombre })
+        });
+        if (res.ok) successCount++; else errorCount++;
+      } catch {
+        errorCount++;
+      }
     }
 
-    setIsProcessing(true);
-    let successCount = 0;
-    let errorCount = 0;
-
-    try {
-      for (const lead of selectedLeads) {
-        try {
-          const response = await fetch(`${import.meta.env.VITE_API_URL}/api/leads/${lead.id}/responsable`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ responsable: assignResponsable })
-          });
-
-          if (response.ok) {
-            successCount++;
-          } else {
-            errorCount++;
-          }
-        } catch (error) {
-          console.error(`Error asignando responsable a lead ${lead.id}:`, error);
-          errorCount++;
-        }
-      }
-
-      if (successCount > 0) {
-        showMessage('success', `Responsable asignado a ${successCount} lead${successCount > 1 ? 's' : ''}`);
-        reloadLeads();
-        setSelectedLeads([]);
-        setShowAssignModal(false);
-        setAssignResponsable('');
-      }
-
-      if (errorCount > 0) {
-        showMessage('error', `Error asignando responsable a ${errorCount} lead${errorCount > 1 ? 's' : ''}`);
-      }
-    } catch (error) {
-      console.error('Error en asignación masiva:', error);
-      showMessage('error', 'Error durante la asignación masiva');
-    } finally {
-      setIsProcessing(false);
+    if (successCount > 0) {
+      showMessage('success', `Responsable asignado a ${successCount} lead${successCount > 1 ? 's' : ''}`);
+      reloadLeads();
+      setSelectedLeads([]);
+      setShowAssignModal(false);
+      setAssignResponsable('');
     }
-  };
+    if (errorCount > 0) {
+      showMessage('error', `Error asignando responsable a ${errorCount} lead${errorCount > 1 ? 's' : ''}`);
+    }
+  } finally {
+    setIsProcessing(false);
+  }
+};
+
 
   // Función para editar leads en lote
   const handleBulkEdit = async () => {
@@ -284,13 +280,6 @@ export default function Gestor() {
             disabled={isLoading || isProcessing}
           >
             {isProcessing ? 'Procesando...' : 'Editar Lote'}
-          </button>
-          <button
-            onClick={() => handleBulkAction('export')}
-            className="bulk-action-btn export-btn"
-            disabled={isLoading || isProcessing}
-          >
-            Exportar Selección
           </button>
           <button
             onClick={() => handleBulkAction('delete')}

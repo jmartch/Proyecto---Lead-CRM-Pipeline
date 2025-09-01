@@ -2,7 +2,6 @@ import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 
 dotenv.config();
-
 /**
  * @swagger
  * components:
@@ -103,6 +102,88 @@ dotenv.config();
  *           type: string
  *           format: date-time
  *           description: Fecha en que se registró el historial.
+ *     AsignacionRegla:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: ID único de la regla.
+ *         origen:
+ *           type: string
+ *           description: Fuente de origen del lead (ej. Facebook Ads).
+ *         campaña:
+ *           type: string
+ *           description: Nombre de la campaña de marketing asociada.
+ *         grupo_responsables:
+ *           type: object
+ *           description: Grupo de responsables asignados (JSON).
+ *         activa:
+ *           type: boolean
+ *           description: Indica si la regla está activa.
+ *         creado:
+ *           type: string
+ *           format: date-time
+ *           description: Fecha de creación.
+ *         actualizado:
+ *           type: string
+ *           format: date-time
+ *           description: Última actualización.
+ *
+ *     Configuracion:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: ID único de la configuración.
+ *         clave:
+ *           type: string
+ *           description: Nombre de la configuración (ej. job_cambio_estado).
+ *         valor:
+ *           type: object
+ *           description: Valor en formato JSON con la configuración.
+ *         descripcion:
+ *           type: string
+ *           description: Descripción de la configuración.
+ *         creado:
+ *           type: string
+ *           format: date-time
+ *           description: Fecha de creación.
+ *         actualizado:
+ *           type: string
+ *           format: date-time
+ *           description: Última actualización.
+ *
+ *     WebhookLog:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: ID único del log.
+ *         lead_id:
+ *           type: integer
+ *           description: ID del lead asociado.
+ *         url:
+ *           type: string
+ *           description: URL del webhook enviado.
+ *         payload:
+ *           type: object
+ *           description: Contenido JSON enviado al webhook.
+ *         respuesta:
+ *           type: string
+ *           description: Respuesta devuelta por el servidor remoto.
+ *         status_code:
+ *           type: integer
+ *           description: Código HTTP devuelto.
+ *         intentos:
+ *           type: integer
+ *           description: Número de intentos realizados.
+ *         exitoso:
+ *           type: boolean
+ *           description: Si el envío fue exitoso.
+ *         creado:
+ *           type: string
+ *           format: date-time
+ *           description: Fecha en que se registró el log.
  */
 
 // Pools de conexión
@@ -129,6 +210,20 @@ export const poolhistorial = mysql.createPool({
   database: 'historial_crm'
 });
 
+// Pool CONFIGURACIONES / NOTIFICACIONES / REGLAS
+export const poolConfig = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: 'config_crm', // Puedes tener todas las tablas de configuraciones en esta BD
+});
+
+export const poolWebhooks = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: 'webhook_logs_crm',
+});
 
 export async function initializeDatabase() {
   let connection;
@@ -181,6 +276,10 @@ export async function initializeDatabase() {
       await connection.query('ALTER TABLE leads ADD COLUMN fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP');
       console.log('Columna fecha_actualizacion agregada en leads');
     }
+    if (!existingColumns.includes('responsable')) {
+      await connection.query('ALTER TABLE leads ADD COLUMN responsable VARCHAR(100)');
+      console.log('Columna responsable agregada en leads ✅');
+    }
 
 
 
@@ -217,7 +316,7 @@ export async function initializeDatabase() {
       }
     }
 
-        /*DB: usuarios_crm */
+    /*DB: usuarios_crm */
     await connection.query('CREATE DATABASE IF NOT EXISTS historial_crm');
     await connection.query('USE historial_crm');
 
@@ -234,6 +333,56 @@ CREATE TABLE IF NOT EXISTS historial (
 )
     `);
 
+    await connection.query('CREATE DATABASE IF NOT EXISTS asignacion_reglas_crm');
+    await connection.query('USE asignacion_reglas_crm');
+
+    await connection.query(`
+  CREATE TABLE IF NOT EXISTS asignacion_reglas (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  origen VARCHAR(255),
+  campaña VARCHAR(255), 
+  grupo_responsables  VARCHAR(255), 
+  activa BOOLEAN DEFAULT TRUE, 
+  creado TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+  actualizado TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, 
+  INDEX idx_origen_campaña (origen, campaña)
+      )
+    `);
+
+    await connection.query('CREATE DATABASE IF NOT EXISTS configuraciones_crm');
+    await connection.query('USE configuraciones_crm');
+
+    await connection.query(`
+  CREATE TABLE IF NOT EXISTS configuraciones (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  clave VARCHAR(100) UNIQUE NOT NULL, 
+  valor JSON NOT NULL, descripcion TEXT, 
+  creado TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+  actualizado TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
+    
+await connection.query('CREATE DATABASE IF NOT EXISTS webhook_logs_crm');
+await connection.query('USE webhook_logs_crm');
+
+await connection.query(`
+  CREATE TABLE IF NOT EXISTS webhook_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY, 
+    lead_id INT NOT NULL, 
+    url VARCHAR(500) NOT NULL, 
+    payload JSON NOT NULL, 
+    respuesta TEXT, 
+    status_code INT, 
+    intentos INT DEFAULT 1, 
+    exitoso BOOLEAN DEFAULT FALSE, 
+    creado TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+    FOREIGN KEY (lead_id) REFERENCES lead_crm.leads(id)
+  )
+`);
+
+
+
     // Conteo de registros
     const [[{ count: leadsCount }]] = await connection.query('SELECT COUNT(*) as count FROM lead_crm.leads');
     console.log(`Número de registros en lead_crm.leads: ${leadsCount}`);
@@ -243,7 +392,6 @@ CREATE TABLE IF NOT EXISTS historial (
 
     const [[{ count: historialCount }]] = await connection.query('SELECT COUNT(*) as count FROM historial_crm.historial');
     console.log(`Número de registros en historial_crm.historial: ${historialCount}`);
-
 
     await connection.end(); // Cierra recién aquí
     console.log('Bases de datos conectadas correctamente ✅');

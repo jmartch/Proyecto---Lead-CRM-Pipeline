@@ -232,9 +232,8 @@ const Table: React.FC<TableProps> = ({ leads, onSelectionChange, isLoading = fal
 
       {/* Información de resultados */}
       <div className="results-info">
-        <span>
-          Mostrando {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredLeads.length)}
-          de {filteredLeads.length} leads
+        <span >
+          Mostrando {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredLeads.length)} de {filteredLeads.length} leads
         </span>
         {selectedLeads.size > 0 && (
           <span className="selection-info">

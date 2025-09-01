@@ -383,10 +383,10 @@ export const LeadModel = {
   async responsable(id, responsable) {
     try {
       const [result] = await pool.query(
-        `UPDATE leads SET responsable=? WHERE id=?`,
+        'UPDATE leads SET responsable = ? WHERE id = ?',
         [responsable, id]
       );
-      return result.affectedRows > 0;
+      return result.affectedRows > 0; // true si se actualizó
     } catch (error) {
       console.error('Error en LeadModel.responsable:', error);
       throw error;
