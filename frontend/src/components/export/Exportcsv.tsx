@@ -23,7 +23,6 @@ const Exportcsv: React.FC<ExportcsvProps> = ({
   onExportSuccess,
   onExportError,
   filters = {},
-  className,
   buttonText = 'Exportar CSV'
 }) => {
   const [isLoading, setIsLoading] = useState(false);

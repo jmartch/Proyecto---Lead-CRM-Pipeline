@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { webhooksController } from '../controllers/webhooks.controller.js';
-import { requireAuth, requireAdmin } from '../middlewares/auth.js';
+import { verifyToken, verifyAdmin } from '../middlewares/auth.middlewares.js';
 
 const router = Router();
 
@@ -36,7 +36,7 @@ const router = Router();
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/webhooks/logs', requireAuth, requireAdmin, webhooksController.obtenerLogs);
+router.get('/webhooks/logs', verifyToken, verifyAdmin, webhooksController.obtenerLogs);
 
 /**
  * @swagger
@@ -50,7 +50,7 @@ router.get('/webhooks/logs', requireAuth, requireAdmin, webhooksController.obten
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/webhooks/config', requireAuth, requireAdmin, webhooksController.obtenerConfiguracion);
+router.get('/webhooks/config', verifyToken, verifyAdmin, webhooksController.obtenerConfiguracion);
 
 /**
  * @swagger
@@ -81,7 +81,7 @@ router.get('/webhooks/config', requireAuth, requireAdmin, webhooksController.obt
  *       500:
  *         description: Error interno del servidor
  */
-router.put('/webhooks/config', requireAuth, requireAdmin, webhooksController.actualizarConfiguracion);
+router.put('/webhooks/config', verifyToken, verifyAdmin, webhooksController.actualizarConfiguracion);
 
 /**
  * @swagger
@@ -109,6 +109,6 @@ router.put('/webhooks/config', requireAuth, requireAdmin, webhooksController.act
  *       500:
  *         description: Error interno del servidor
  */
-router.post('/webhooks/test', requireAuth, requireAdmin, webhooksController.probarWebhook);
+router.post('/webhooks/test', verifyToken, verifyAdmin, webhooksController.probarWebhook);
 
 export default router;

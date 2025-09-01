@@ -27,7 +27,7 @@ export default function Gestor() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [selectedLeads, setSelectedLeads] = useState<Lead[]>([]);
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
   const [message, setMessage] = useState<Message | null>(null);
 
 

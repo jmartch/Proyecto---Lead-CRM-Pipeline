@@ -168,3 +168,5 @@ export const assignmentController = {
 
     }
 }
+
+export default assignmentController;

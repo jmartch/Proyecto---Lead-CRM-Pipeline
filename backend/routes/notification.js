@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { notificacionesController } from '../controllers/notification.controller.js';
-import { requireAuth, requireAdmin } from '../middlewares/auth.js';
+import { verifyToken, verifyAdmin } from '../middlewares/auth.middlewares.js';
 
 const router = Router();
 
@@ -25,7 +25,7 @@ const router = Router();
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/config', requireAuth, requireAdmin, notificacionesController.obtenerConfiguracionEmail);
+router.get('/config', verifyToken, verifyAdmin, notificacionesController.obtenerConfiguracionEmail);
 
 /**
  * @swagger
@@ -63,7 +63,7 @@ router.get('/config', requireAuth, requireAdmin, notificacionesController.obtene
  *       500:
  *         description: Error interno del servidor
  */
-router.put('/config', requireAuth, requireAdmin, notificacionesController.actualizarConfiguracionEmail);
+router.put('/config', verifyToken, verifyAdmin, notificacionesController.actualizarConfiguracionEmail);
 
 /**
  * @swagger
@@ -94,6 +94,6 @@ router.put('/config', requireAuth, requireAdmin, notificacionesController.actual
  *       500:
  *         description: Error interno del servidor
  */
-router.post('/test', requireAuth, requireAdmin, notificacionesController.probarEmail);
+router.post('/test', verifyToken, verifyAdmin, notificacionesController.probarEmail);
 
 export default router;

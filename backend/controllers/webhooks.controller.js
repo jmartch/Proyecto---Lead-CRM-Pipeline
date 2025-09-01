@@ -1,6 +1,5 @@
-import { webhooksModel } from '../models/webhooks.model.js';
-import { NotificacionesModel } from '../models/notificaciones.model.js'; // tu clase que envía axios
-
+import { webhooksModel } from '../models/webhooks.models.js';
+import { NotificacionesModel } from '../models/notification.models.js'; 
 export const webhooksController = {
   // GET /api/webhooks/logs
   async obtenerLogs(req, res) {

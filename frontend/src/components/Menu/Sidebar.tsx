@@ -5,7 +5,7 @@ import Button from '../buttons/Button';
 import { useNavigate } from "react-router-dom";
 import { FaSun, FaMoon } from 'react-icons/fa'
 import { BsLayoutSidebar } from 'react-icons/bs';
-import { useEffect, useState } from 'react';
+import {useState } from 'react';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -16,7 +16,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, theme, toggleTheme }) => {
     const navigate = useNavigate();
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading] = useState(false);
 
     return (
         <div className={`sidebar ${isOpen ? "open" : ""} ${theme}`}>

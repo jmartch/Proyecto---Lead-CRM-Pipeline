@@ -1,6 +1,6 @@
 import {RouterSi } from 'express';
 import { jobController } from '../controllers/job.controller.js';
-import { requireAuth, requireAdmin } from '../middlewares/auth.js';
+import { verifyToken, verifyAdmin  } from '../middlewares/auth.middlewares.js';
 
 const router = Router();
 
@@ -27,7 +27,7 @@ const router = Router();
  *       403:
  *         description: Requiere permisos de administrador
  */
-router.get('/config', requireAuth, requireAdmin, jobController.obtenerConfiguracion);
+router.get('/config', verifyToken, verifyAdmin , jobController.obtenerConfiguracion);
 
 /**
  * @swagger
@@ -63,7 +63,7 @@ router.get('/config', requireAuth, requireAdmin, jobController.obtenerConfigurac
  *       403:
  *         description: Requiere permisos de administrador
  */
-router.put('/config', requireAuth, requireAdmin, jobController.actualizarConfiguracion);
+router.put('/config', verifyToken, verifyAdmin , jobController.actualizarConfiguracion);
 
 /**
  * @swagger
@@ -81,6 +81,6 @@ router.put('/config', requireAuth, requireAdmin, jobController.actualizarConfigu
  *       403:
  *         description: Requiere permisos de administrador
  */
-router.post('/ejecutar', requireAuth, requireAdmin, jobController.ejecutarManualmente);
+router.post('/ejecutar', verifyToken, verifyAdmin , jobController.ejecutarManualmente);
 
 export default router;

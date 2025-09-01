@@ -1,17 +1,22 @@
 import nodemailer from 'nodemailer';
 import axios from 'axios';
-import db from '../config/db.js';
+import fs from 'fs';
+import { pool, poolhistorial } from '../config/db.js';
+
+const CONFIG_PATH = './config/email.json';
 
 export class NotificacionesModel {
     static transporter = null;
 
-        static async obtenerConfiguracionEmail() {
+    // ==============================
+    // Configuración de EMAIL
+    // ==============================
+    static async obtenerConfiguracionEmail() {
         try {
             if (fs.existsSync(CONFIG_PATH)) {
                 const data = fs.readFileSync(CONFIG_PATH, 'utf8');
                 return JSON.parse(data);
             }
-            // Config default
             return { activo: false, smtp: { host: '', port: 587, user: '', pass: '' } };
         } catch (error) {
             console.error('Error leyendo configuración de email:', error);
@@ -32,8 +37,8 @@ export class NotificacionesModel {
     // Inicializar transporte SMTP
     static async inicializarSMTP() {
         try {
-            const config = await db.obtenerConfiguracionEmail();
-            
+            const config = await NotificacionesModel.obtenerConfiguracionEmail();
+
             if (config.activo && config.smtp?.host) {
                 NotificacionesModel.transporter = nodemailer.createTransport({
                     host: config.smtp.host,
@@ -50,7 +55,9 @@ export class NotificacionesModel {
         }
     }
 
-    // Enviar email de asignación
+    // ==============================
+    // EMAIL: Notificación asignación
+    // ==============================
     static async enviarEmailAsignacion(leadId, responsable) {
         try {
             if (!NotificacionesModel.transporter) {
@@ -60,13 +67,17 @@ export class NotificacionesModel {
                     return false;
                 }
             }
-            
-            const leadData = await db.obtenerLeadPorId(leadId);
-            if (!leadData) return false;
 
-            // Usar responsable directamente si parece email, si no, adjuntar dominio
-            const destinatario = responsable.includes('@') 
-                ? responsable 
+            // Obtener lead desde BD
+            const [rows] = await pool.query(
+                'SELECT id, nombre, email, telefono FROM leads WHERE id = ?',
+                [leadId]
+            );
+            if (rows.length === 0) return false;
+            const leadData = rows[0];
+
+            const destinatario = responsable.includes('@')
+                ? responsable
                 : `${responsable}@empresa.com`;
 
             const mailOptions = {
@@ -78,93 +89,107 @@ export class NotificacionesModel {
                        <p><b>Email:</b> ${leadData.email}</p>
                        <p><b>Teléfono:</b> ${leadData.telefono || 'No proporcionado'}</p>`
             };
-            
+
             await NotificacionesModel.transporter.sendMail(mailOptions);
             console.log(`✅ Email de asignación enviado a ${destinatario}`);
             return true;
-            
+
         } catch (error) {
             console.error('❌ Error enviando email:', error);
             return false;
         }
     }
 
-    // Enviar webhook
+    // ==============================
+    // WEBHOOKS
+    // ==============================
     static async enviarWebhook(leadId, evento, datos = {}) {
         try {
-            const config = await db.obtenerConfiguracionWebhooks();
-            
-            if (!config.activo || !config.url_base) {
+            // Configuración básica desde variables de entorno
+            const url_base = process.env.WEBHOOK_URL || '';
+            const activo = process.env.WEBHOOK_ACTIVO === 'true';
+            const reintentos = parseInt(process.env.WEBHOOK_REINTENTOS || '3');
+
+            if (!activo || !url_base) {
                 console.log('Webhooks desactivados o sin URL configurada');
                 return false;
             }
-            
+
             const payload = {
                 evento,
                 lead_id: leadId,
                 timestamp: new Date().toISOString(),
                 datos
             };
-            
+
             return await NotificacionesModel.enviarWebhookConReintentos(
-                leadId, 
-                config.url_base, 
-                payload, 
-                config.reintentos || 3
+                leadId,
+                url_base,
+                payload,
+                reintentos
             );
-            
+
         } catch (error) {
             console.error('❌ Error enviando webhook:', error);
             return false;
         }
     }
 
-    // Enviar webhook con reintentos
     static async enviarWebhookConReintentos(leadId, url, payload, maxIntentos) {
         let intentos = 0;
         let exitoso = false;
         let ultimaRespuesta = null;
         let ultimoStatusCode = 0;
-        
+
         while (intentos < maxIntentos && !exitoso) {
             intentos++;
             try {
                 console.log(`📡 Enviando webhook (intento ${intentos}/${maxIntentos}) para lead ${leadId}`);
-                
+
                 const respuesta = await axios.post(url, payload, {
                     timeout: 10000,
                     headers: { 'Content-Type': 'application/json' }
                 });
-                
+
                 ultimaRespuesta = respuesta.data;
                 ultimoStatusCode = respuesta.status;
                 exitoso = respuesta.status >= 200 && respuesta.status < 300;
-                
+
                 if (exitoso) {
                     console.log(`✅ Webhook enviado exitosamente para lead ${leadId}`);
                 }
-                
+
             } catch (error) {
                 console.error(`❌ Intento ${intentos} fallido para webhook lead ${leadId}:`, error.message);
                 ultimaRespuesta = error.message;
                 ultimoStatusCode = error.response?.status || 0;
-                
+
                 if (intentos < maxIntentos) {
                     await new Promise(resolve => setTimeout(resolve, Math.pow(2, intentos) * 1000));
                 }
             }
         }
-        
-        await db.crearLogWebhook(
-            leadId, 
-            url, 
-            payload, 
-            ultimaRespuesta, 
-            ultimoStatusCode, 
-            intentos, 
-            exitoso
-        );
-        
+
+        // Guardar log en tabla historial
+        try {
+            await poolhistorial.query(
+                `INSERT INTO webhooks_log 
+                (lead_id, url, payload, respuesta, status_code, intentos, exitoso, fecha) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`,
+                [
+                    leadId,
+                    url,
+                    JSON.stringify(payload),
+                    JSON.stringify(ultimaRespuesta),
+                    ultimoStatusCode,
+                    intentos,
+                    exitoso ? 1 : 0
+                ]
+            );
+        } catch (err) {
+            console.error('❌ Error guardando log de webhook:', err.message);
+        }
+
         return exitoso;
     }
 }

@@ -19,7 +19,7 @@ interface Message {
 
 export default function Usuarios() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
-  const [selectedUsuarios, setSelectedUsuarios] = useState<Usuario[]>([]);
+  const [, setSelectedUsuarios] = useState<Usuario[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<Message | null>(null);
 

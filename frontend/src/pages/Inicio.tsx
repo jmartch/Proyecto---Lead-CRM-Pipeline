@@ -16,11 +16,6 @@ interface Lead {
   estado?: string;
 }
 
-interface Message {
-  type: 'success' | 'error';
-  text: string;
-}
-
 interface LeadFormProps {
   onLeadAdded: (lead: Lead) => void;
   onMessage: (type: 'success' | 'error', text: string) => void;
