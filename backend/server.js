@@ -19,6 +19,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.get("/api/ping", (req, res) => {
+  res.json({ msg: "pong" });
+});
+
 // Rutas de la API
 app.use('/api/leads', leadRoutes);
 app.use('/api/users', userRoutes);
@@ -37,6 +41,10 @@ async function start() {
   app.listen(PORT, () => {
     console.log(`🚀 API escuchando en puerto ${PORT}`);
     console.log(``);
+
+        console.log(`PING http://localhost:${PORT}/api/ping
+`);
+
 
     console.log(`🌐 Endpoints disponibles:`);
     console.log(`Usuarios (DB: usuarios_crm)`);
